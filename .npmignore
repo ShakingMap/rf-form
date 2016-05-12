@@ -1,0 +1,7 @@
+.*
+src/
+local/
+node_modules/
+test/
+npm-debug.log
+webpack.config.js
