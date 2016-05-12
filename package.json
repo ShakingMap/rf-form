@@ -11,6 +11,10 @@
   },
   "author": "zhaoyao91 <zhaoyao91@163.com>",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ShakingMap/rf-form.git"
+  },
   "dependencies": {},
   "peerDependencies": {
     "react": ">=0.13.0"
