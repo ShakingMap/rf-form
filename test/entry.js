@@ -18,13 +18,13 @@ const schema = {
     },
     account: {
         label: 'Group',
-        validate(v) {
-            if (v.username === 'bob') return 'no bob!'
-        },
         group: {
             username: {
                 type: 'Text',
-                label: 'Username'
+                label: 'Username',
+                validate(v) {
+                    if (v === 'bob') return 'no bob!'
+                }
             },
             password: {
                 type: 'Password',
@@ -35,7 +35,7 @@ const schema = {
     friends: {
         label: 'Friends',
         validate(v) {
-            if (v && v[0] && v[0].name === 'bob') return 'no bob!'
+            if (v && v.length > 2) return 'too many friends!'
         },
         array: {
             // label: ...
@@ -44,7 +44,7 @@ const schema = {
                     type: 'Text',
                     label: 'Name',
                     validate(v) {
-                        if (v === 'bob') return 'no bob!'
+                        if (v !== 'bob') return 'must be bob!'
                     }
                 }
             }
@@ -70,8 +70,11 @@ class TestPage extends React.Component {
     render() {
         return <Form {...{
             schema,
-            initValues
-        }}/>
+            initValues,
+            onSubmit: (value, vd)=> console.log(value, vd)
+        }}>
+            <button className="btn btn-primary">提交</button>
+        </Form>
     }
 }
 

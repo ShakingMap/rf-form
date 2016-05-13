@@ -14,8 +14,8 @@ import _ from 'lodash';
  * array -> {state: array[0], message: array[1]}
  *
  * control node:
- * - type - now hold the react class
- * - wrapper - now hold the react class
+ * - type - hold the react class
+ * - wrapper - hold the react class
  * - id
  * - label
  * - options
@@ -23,25 +23,9 @@ import _ from 'lodash';
  * - value
  * - validation - validation result
  * - enableValidation
- * - array - now hold the array of sub control node(s)
- * - group - now hold the group of sub control node(s)
+ * - array - hold the array of sub control node(s)
+ * - group - hold the group of sub control node(s)
  */
-
-// field
-// group
-// array
-
-// 值显示
-// 值关联
-// 校验
-// 校验显示
-// 智能校验
-
-// 汇总submit
-
-// todo
-// group, array的校验状态不要渗透到里面了。。。
-
 
 const propTypes = {
     // *** start 1 ***
@@ -55,7 +39,7 @@ const propTypes = {
 
     // *** end 1 ***
 
-    // func(values, summary, validations)
+    // func(values, validations)
     onSubmit: React.PropTypes.func,
 
     readOnly: React.PropTypes.bool,
@@ -78,7 +62,9 @@ class Form extends React.Component {
         super(props);
         this.state = {
             // used to trigger form update
-            updateCount: 0
+            updateCount: 0,
+
+            enableValidation: false
         }
     }
 
@@ -93,12 +79,15 @@ class Form extends React.Component {
     }
 
     render() {
-        return this.getRenderNode(this.controlNode);
+        return <form ref="form" onSubmit={this.onSubmit.bind(this)}>
+            {this.getRenderNode(this.controlNode)}
+            {this.props.children}
+        </form>;
     }
 
     rebuild(schema, initValues, buildOptions) {
         const formSchema = {
-            type: this.getFormGroup(),
+            type: EmptyGroup,
             wrapper: EmptyWrapper,
             group: schema
         };
@@ -108,8 +97,9 @@ class Form extends React.Component {
 
     getFormGroup() {
         const FormGroup = (props) => {
-            return <form>
+            return <form onSubmit={this.onSubmit.bind(this)}>
                 {props.children}
+                {this.props.children}
             </form>
         };
         FormGroup.displayName = 'FormGroup';
@@ -117,12 +107,15 @@ class Form extends React.Component {
     }
 
     getRenderNode(controlNode) {
-        const {onSubmit, readOnly, disabled} = this.props;
+        const {readOnly, disabled} = this.props;
         const {id, label, options, validate, value, validation, array, group} = controlNode;
         const Wrapper = controlNode.wrapper;
         const Node = controlNode.type;
 
-        const enableValidation = this.props.enableValidation === 'auto' ? controlNode.enableValidation : !!this.props.enableValidation;
+        const enableValidation = this.props.enableValidation === 'auto' ?
+            (this.enableValidation || controlNode.enableValidation)
+            :
+            !!this.props.enableValidation;
 
         // not all node has validation
         let validationState = enableValidation ? _.get(validation, 'state') : '';
@@ -134,11 +127,25 @@ class Form extends React.Component {
                 id, disabled, validationState,
                 children: _.map(array, (controlNode, index)=><div key={index}>
                     {this.getRenderNode(controlNode)}
-                </div>)
+                </div>),
+                onInsert: (index)=> {
+                    array.splice(index, 0, buildControlNode(controlNode.schema.array, null, controlNode.buildOptions));
+                    controlNode.enableValidation = true;
+                    this.updateForm();
+                },
+                onRemove: (index)=> {
+                    array.splice(index, 1);
+                    controlNode.enableValidation = true;
+                    this.updateForm();
+                },
+                onMove: (from, to)=> {
+                    array.splice(from, 0, array.splice(to, 1)[0]);
+                    controlNode.enableValidation = true;
+                    this.updateForm();
+                }
             }
         }
         else if (group) {
-            // todo get && validationState of subNode
             nodeProps = {
                 validationState,
                 children: _.map(group, (controlNode, key)=><div key={key}>
@@ -165,6 +172,24 @@ class Form extends React.Component {
     updateForm() {
         this.setState({updateCount: this.state.updateCount + 1})
     }
+
+    onSubmit(e) {
+        const {onSubmit} = this.props;
+        e.preventDefault();
+
+        this.enableValidation = true;
+        this.updateForm();
+
+        const value = getValueOfControlNode(this.controlNode);
+        const summary = getValidationSummaryOfControlNode(this.controlNode);
+        const validations = getValidationDataOfControlNode(this.controlNode);
+
+        onSubmit(value, summary, validations.group);
+    }
+
+    submit() {
+        this.refs.form.dispatchEvent(new Event('submit'));
+    }
 }
 
 Form.propTypes = propTypes;
@@ -173,7 +198,11 @@ Form.defaultProps = defaultProps;
 export default Form;
 
 const EmptyWrapper = ({children})=> {
-    return children;
+    return <div>{children}</div>;
+};
+
+const EmptyGroup = ({children})=> {
+    return <div>{children}</div>;
 };
 
 /**
@@ -194,8 +223,10 @@ const adaptValidate = (validate)=> {
     }
 };
 
-function buildControlNode(fieldSchema, value, buildOptions) {
+function buildControlNode(fieldSchema, value = null, buildOptions) {
     const node = _.clone(fieldSchema);
+    node.schema = fieldSchema;
+    node.buildOptions = buildOptions;
 
     if (typeof node.type === 'string') node.type = buildOptions.fields[node.type];
     if (!node.wrapper) node.wrapper = buildOptions.Wrapper;
@@ -256,4 +287,35 @@ function tryEnableValidationOfControlNode(node) {
     }
 
     return node.enableValidation;
+}
+
+function getValidationDataOfControlNode(node) {
+    const data = {};
+    data.state = node.validation.state;
+    data.message = node.validation.message;
+
+    if (node.array) data.array = _.map(node.array, (subNode)=>getValidationDataOfControlNode(subNode));
+    else if (node.group) data.group = _.mapValues(node.group, (subNode)=>getValidationDataOfControlNode(subNode));
+
+    return data;
+}
+
+function getValidationSummaryOfControlNode(node) {
+    let summary = {
+        success: 0,
+        warning: 0,
+        error: 0
+    };
+
+    if (node.array || node.group) {
+        let subNodes = node.array || node.group;
+        _.forEach(subNodes, (subNode)=> {
+            const subSummary = getValidationSummaryOfControlNode(subNode);
+            summary = _.mapValues(summary, (value, state)=>value + subSummary[state]);
+        });
+    }
+
+    if (node.validation.state) summary[node.validation.state] = summary[node.validation.state] + 1;
+
+    return summary;
 }
