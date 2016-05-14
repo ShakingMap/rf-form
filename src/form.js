@@ -66,7 +66,7 @@ class Form extends React.Component {
     }
 
     render() {
-        const {onChange, buildOptions, enableValidation, children} = this.props;
+        const {onChange, buildOptions, enableValidation, children, readOnly, disabled} = this.props;
 
         return <form onSubmit={this.onSubmit.bind(this)}>
             {this.getRenderNode({
@@ -80,7 +80,8 @@ class Form extends React.Component {
                     onChange(v, e);
                 },
                 buildOptions,
-                enableValidation
+                enableValidation,
+                readOnly, disabled
             })}
             {children}
         </form>
@@ -94,7 +95,7 @@ class Form extends React.Component {
         }
     }
 
-    getRenderNode({id, schema, value, onChange, enableValidationState, buildOptions, enableValidation}) {
+    getRenderNode({id, schema, value, onChange, enableValidationState, buildOptions, enableValidation, readOnly, disabled}) {
         // pre-process options
         const Wrapper = schema.wrapper ? schema.wrapper : buildOptions.Wrapper;
         const options = schema.options || {};
@@ -104,6 +105,8 @@ class Form extends React.Component {
             (this.state.enableValidation || enableValidationState.enabled)
             :
             enableValidation;
+        const localReadOnly = schema.readOnly || readOnly;
+        const localDisabled = schema.disabled || disabled;
 
         // build node;
         let node = null;
@@ -125,7 +128,7 @@ class Form extends React.Component {
                         array: enableValidationState.array.slice(0, index).concat([evs], enableValidationState.array.slice(index + 1))
                     }
                 ),
-                enableValidation
+                enableValidation, readOnly, disabled
             }));
             node = <Node {...options} {...{
                 children,
@@ -137,7 +140,9 @@ class Form extends React.Component {
                         value.slice(0, from).concat(value.slice(from + 1, to + 1), [value[from]], value.slice(to + 1))
                         :
                         value.slice(0, to).concat([value[from]], value.slice(to, from), value.slice(from + 1))
-                    , null, validationStateForActiveArray)
+                    , null, validationStateForActiveArray),
+                readOnly: localReadOnly,
+                disabled: localDisabled
             }}/>
         }
         else if (schema.group) {
@@ -157,11 +162,13 @@ class Form extends React.Component {
                         group: _.assign({}, enableValidationState.group, {[key]: evs})
                     }
                 ),
-                enableValidation
+                enableValidation, readOnly, disabled
             }));
             node = <Node {...options} {...{
                 children,
-                validationState: localEnableValidation ? validation.state : ''
+                validationState: localEnableValidation ? validation.state : '',
+                readOnly: localReadOnly,
+                disabled: localDisabled
             }}/>
         }
         else {
@@ -170,7 +177,9 @@ class Form extends React.Component {
             node = <Node {...options} {...{
                 id, value,
                 onChange: (v, e)=> onChange(v, e, {enabled: true}),
-                validationState: localEnableValidation ? validation.state : ''
+                validationState: localEnableValidation ? validation.state : '',
+                readOnly: localReadOnly,
+                disabled: localDisabled
             }}/>
         }
 
