@@ -53,26 +53,36 @@ const defaultProps = {
 };
 
 class Form extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            enableValidation: false
+        }
+    }
+
     componentWillMount() {
         this.id = Math.random() + '';
         this.enableValidationState = null;
     }
 
     render() {
-        const {schema, value, onChange, buildOptions, enableValidation} = this.props;
+        const {schema, value, onChange, buildOptions, enableValidation, children} = this.props;
 
-        return this.getRenderNode({
-            id: this.id,
-            schema: this.getFormSchema(),
-            value,
-            enableValidationState: this.enableValidationState,
-            onChange: (v, e, evs)=> {
-                this.enableValidationState = evs;
-                onChange(v, e);
-            },
-            buildOptions,
-            enableValidation
-        })
+        return <form onSubmit={this.onSubmit.bind(this)}>
+            {this.getRenderNode({
+                id: this.id,
+                schema: this.getFormSchema(),
+                value,
+                enableValidationState: this.enableValidationState,
+                onChange: (v, e, evs)=> {
+                    this.enableValidationState = evs;
+                    onChange(v, e);
+                },
+                buildOptions,
+                enableValidation
+            })}
+            {children}
+        </form>
     }
 
     getFormSchema() {
@@ -89,7 +99,10 @@ class Form extends React.Component {
         const options = schema.options || {};
         const validation = validate(schema.validate, value);
         enableValidationState = enableValidationState || {enabled: false, array: [], group: {}};
-        const localEnableValidation = enableValidation === 'auto' ? enableValidationState.enabled : enableValidation;
+        const localEnableValidation = enableValidation === 'auto' ?
+            (this.state.enableValidation || enableValidationState.enabled)
+            :
+            enableValidation;
 
         // build node;
         let node = null;
@@ -169,6 +182,50 @@ class Form extends React.Component {
             validationState: localEnableValidation ? validation.state : '',
             validationMessage: localEnableValidation ? validation.message : ''
         }}/>
+    }
+
+    onSubmit(e) {
+        e.preventDefault();
+        const value = this.props.value;
+        const validationData = this.getValidationData(this.getFormSchema(), value);
+        this.setState({enableValidation: true});
+        this.props.onSubmit(value, validationData.summary, validationData.validation);
+    }
+
+    getValidationData(schema, value) {
+        const validation = validate(schema.validate, value);
+        const summary = validation.state ? {[validation.state]: 1} : {};
+
+        if (schema.array) {
+            return _.reduce(value, (result, subValue, index)=> {
+                const subValidationData = this.getValidationData(schema.array, subValue);
+                return {
+                    summary: _.assignWith({}, result.summary, subValidationData.summary, (v1, v2)=> (v1 || 0) + (v2 || 0)),
+                    validation: _.assign({}, result.validation, {array: result.validation.array.concat([subValidationData.validation])})
+                }
+            }, {
+                summary,
+                validation: _.assign({array: []}, validation)
+            })
+        }
+        else if (schema.group) {
+            return _.reduce(schema.group, (result, subSchema, key)=> {
+                const subValidationData = this.getValidationData(subSchema, value[key]);
+                return {
+                    summary: _.assignWith({}, result.summary, subValidationData.summary, (v1, v2)=> (v1 || 0) + (v2 || 0)),
+                    validation: _.assign({}, result.validation, {group: _.assign({[key]: subValidationData.validation}, result.validation.group)})
+                }
+            }, {
+                summary,
+                validation: _.assign({group: {}}, validation)
+            })
+        }
+        else {
+            return {
+                summary,
+                validation
+            }
+        }
     }
 }
 
