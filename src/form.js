@@ -89,7 +89,15 @@ class Form extends React.Component {
                 // todo other global args
             }));
             node = <Node {...{
-                children
+                children,
+                onInsert: (index)=> onChange(value.slice(0, index).concat(null, value.slice(index))),
+                onRemove: (index)=> onChange(value.slice(0, index).concat(value.slice(index + 1))),
+                onMove: (from, to)=> onChange(
+                    from < to ?
+                        value.slice(0, from).concat(value.slice(from + 1, to + 1), [value[from]], value.slice(to + 1))
+                        :
+                        value.slice(0, to).concat([value[from]], value.slice(to, from), value.slice(from + 1))
+                )
             }}/>
         }
         else if (schema.group) {
