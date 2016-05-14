@@ -85,7 +85,7 @@ class Form extends React.Component {
                 schema: schema.array,
                 value: subValue,
                 buildOptions,
-                onChange: null // todo
+                onChange: (v, e)=> onChange(value.slice(0, index).concat([v], value.slice(index + 1)), e)
                 // todo other global args
             }));
             node = <Node {...{
@@ -100,7 +100,7 @@ class Form extends React.Component {
                 schema: subSchema,
                 value: value[key],
                 buildOptions,
-                onChange: null // todo
+                onChange: (v, e)=> onChange(_.assign({}, value, {[key]: v}), e)
                 // todo other global args
             }));
             node = <Node {...{
@@ -111,7 +111,7 @@ class Form extends React.Component {
             const Node = typeof schema.type === 'string' ? buildOptions.fields[schema.type] : schema.type;
             if (value === undefined) value = null;
             node = <Node {...{
-                id, value
+                id, value, onChange
             }}/>
         }
 

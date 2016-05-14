@@ -54,23 +54,29 @@ const schema = {
 
 schema.friends.array.group.friends = schema.friends;
 
-const value = {
-    age: 10,
-    account: {
-        username: 'bob',
-        password: '123'
-    },
-    friends: [
-        {name: 'alan'},
-        {name: 'doge', friends: [{name: 'cate'}]}
-    ]
-};
-
 class TestPage extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            value: {
+                age: 10,
+                account: {
+                    username: 'bob',
+                    password: '123'
+                },
+                friends: [
+                    {name: 'alan'},
+                    {name: 'doge', friends: [{name: 'cate'}]}
+                ]
+            }
+        }
+    }
+
     render() {
         return <Form {...{
             schema,
-            value
+            value: this.state.value,
+            onChange: (v, e)=>this.setState({value: v})
         }}>
             <button className="btn btn-primary">提交</button>
         </Form>
