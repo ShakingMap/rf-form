@@ -100,6 +100,7 @@ class Form extends React.Component {
         // pre-process options
         const Wrapper = schema.wrapper ? schema.wrapper : buildOptions.Wrapper;
         const options = schema.options || {};
+        value = getProperValue(schema, value);
         const validation = validate(schema.validate, value);
         enableValidationState = enableValidationState || {enabled: false, array: [], group: {}};
         const localEnableValidation = enableValidation === 'auto' ?
@@ -112,7 +113,6 @@ class Form extends React.Component {
         // build node;
         let node = null;
         if (schema.array) {
-            value = value || [];
             const Node = schema.type ? schema.type : buildOptions.Array;
             const validationStateForActiveArray = {enabled: true, array: enableValidationState.array};
             const children = _.map(value, (subValue, index)=>this.getRenderNode({
@@ -147,7 +147,6 @@ class Form extends React.Component {
             }}/>
         }
         else if (schema.group) {
-            value = value || {};
             const Node = schema.type ? schema.type : buildOptions.Group;
             const children = _.map(schema.group, (subSchema, key)=>this.getRenderNode({
                 id: id + '.' + key,
@@ -174,7 +173,6 @@ class Form extends React.Component {
         }
         else {
             const Node = typeof schema.type === 'string' ? buildOptions.fields[schema.type] : schema.type;
-            if (value === undefined) value = null;
             node = <Node {...options} {...{
                 id, value,
                 onChange: (v, e)=> onChange(v, e, {enabled: true}),
@@ -197,7 +195,7 @@ class Form extends React.Component {
 
     onSubmit(e) {
         e && e.preventDefault();
-        const value = this.getValue();
+        const value = getProperValue(this.getFormSchema(), this.getValue());
         const validationData = this.getValidationData(this.getFormSchema(), value);
         this.setState({enableValidation: true});
         let result = {value, summary: validationData.summary, validation: validationData.validation};
@@ -289,4 +287,22 @@ const validate = (validate, value)=> {
         else if (Array.isArray(result)) return {state: result[0], message: result[1]};
         else return result;
     }
+};
+
+/**
+ * build value with prop default value
+ * left node -> null
+ * group -> {key: properValue}
+ * array -> []
+ */
+const getProperValue = (schema, value)=> {
+    if (schema.group) {
+        value = value || {};
+        return _.mapValues(schema.group, (subSchema, key)=>getProperValue(subSchema, value[key]))
+    }
+    else if (schema.array) {
+        value = value || [];
+        return _.map(value, (subValue, index)=>getProperValue(schema.array, subValue))
+    }
+    else return value !== undefined ? value : null;
 };
