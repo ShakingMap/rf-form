@@ -44,7 +44,7 @@ const propTypes = {
 const defaultProps = {
     schema: {},
     buildOptions: {},
-    value: {},
+    // value: {}, // to support uncontrolled form, default value should be disabled
     onChange(){},
     onSubmit(){},
     readOnly: false,
@@ -66,16 +66,17 @@ class Form extends React.Component {
     }
 
     render() {
-        const {schema, value, onChange, buildOptions, enableValidation, children} = this.props;
+        const {onChange, buildOptions, enableValidation, children} = this.props;
 
         return <form onSubmit={this.onSubmit.bind(this)}>
             {this.getRenderNode({
                 id: this.id,
                 schema: this.getFormSchema(),
-                value,
+                value: this.getValue(),
                 enableValidationState: this.enableValidationState,
                 onChange: (v, e, evs)=> {
                     this.enableValidationState = evs;
+                    if (!this.isControlled()) this.setState({value: v});
                     onChange(v, e);
                 },
                 buildOptions,
@@ -186,7 +187,7 @@ class Form extends React.Component {
 
     onSubmit(e) {
         e.preventDefault();
-        const value = this.props.value;
+        const value = this.getValue();
         const validationData = this.getValidationData(this.getFormSchema(), value);
         this.setState({enableValidation: true});
         this.props.onSubmit(value, validationData.summary, validationData.validation);
@@ -197,6 +198,7 @@ class Form extends React.Component {
         const summary = validation.state ? {[validation.state]: 1} : {};
 
         if (schema.array) {
+            value = value || [];
             return _.reduce(value, (result, subValue, index)=> {
                 const subValidationData = this.getValidationData(schema.array, subValue);
                 return {
@@ -209,6 +211,7 @@ class Form extends React.Component {
             })
         }
         else if (schema.group) {
+            value = value || {};
             return _.reduce(schema.group, (result, subSchema, key)=> {
                 const subValidationData = this.getValidationData(subSchema, value[key]);
                 return {
@@ -226,6 +229,14 @@ class Form extends React.Component {
                 validation
             }
         }
+    }
+
+    isControlled() {
+        return this.props.value !== undefined;
+    }
+
+    getValue() {
+        return this.isControlled() ? this.props.value : this.state.value;
     }
 }
 

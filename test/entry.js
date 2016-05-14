@@ -78,8 +78,8 @@ class TestPage extends React.Component {
     render() {
         return <Form {...{
             schema,
-            value: this.state.value,
-            onChange: (v, e)=>this.setState({value: v}),
+            //value: this.state.value,
+            //onChange: (v, e)=>this.setState({value: v}),
             onSubmit: (value, summary, validation)=> console.log({value, summary, validation})
         }}>
             <button className="btn btn-primary">提交</button>
