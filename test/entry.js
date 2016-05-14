@@ -54,7 +54,7 @@ const schema = {
 
 schema.friends.array.group.friends = schema.friends;
 
-const initValues = {
+const value = {
     age: 10,
     account: {
         username: 'bob',
@@ -70,8 +70,7 @@ class TestPage extends React.Component {
     render() {
         return <Form {...{
             schema,
-            initValues,
-            onSubmit: (value, vd)=> console.log(value, vd)
+            value
         }}>
             <button className="btn btn-primary">提交</button>
         </Form>
