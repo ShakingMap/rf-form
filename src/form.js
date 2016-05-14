@@ -52,14 +52,15 @@ class Form extends React.Component {
     }
 
     render() {
-        const {schema, value, onChange, buildOptions} = this.props;
+        const {schema, value, onChange, buildOptions, enableValidation} = this.props;
 
         return this.getRenderNode({
             id: this.id,
             schema: this.getFormSchema(),
             value,
             onChange,
-            buildOptions
+            buildOptions,
+            enableValidation
         })
     }
 
@@ -71,7 +72,7 @@ class Form extends React.Component {
         }
     }
 
-    getRenderNode({id, schema, value, onChange, buildOptions}) {
+    getRenderNode({id, schema, value, onChange, buildOptions, enableValidation}) {
         // pre-process options
         const Wrapper = schema.wrapper ? schema.wrapper : buildOptions.Wrapper;
         const options = schema.options || {};
@@ -87,12 +88,12 @@ class Form extends React.Component {
                 schema: schema.array,
                 value: subValue,
                 buildOptions,
-                onChange: (v, e)=> onChange(value.slice(0, index).concat([v], value.slice(index + 1)), e)
-                // todo other global args
+                onChange: (v, e)=> onChange(value.slice(0, index).concat([v], value.slice(index + 1)), e),
+                enableValidation
             }));
             node = <Node {...options} {...{
                 children,
-                validationState: validation.state,
+                validationState: enableValidation ? validation.state : '',
                 onInsert: (index)=> onChange(value.slice(0, index).concat(null, value.slice(index))),
                 onRemove: (index)=> onChange(value.slice(0, index).concat(value.slice(index + 1))),
                 onMove: (from, to)=> onChange(
@@ -111,12 +112,12 @@ class Form extends React.Component {
                 schema: subSchema,
                 value: value[key],
                 buildOptions,
-                onChange: (v, e)=> onChange(_.assign({}, value, {[key]: v}), e)
-                // todo other global args
+                onChange: (v, e)=> onChange(_.assign({}, value, {[key]: v}), e),
+                enableValidation
             }));
             node = <Node {...options} {...{
                 children,
-                validationState: validation.state
+                validationState: enableValidation ? validation.state : ''
             }}/>
         }
         else {
@@ -124,7 +125,7 @@ class Form extends React.Component {
             if (value === undefined) value = null;
             node = <Node {...options} {...{
                 id, value, onChange,
-                validationState: validation.state
+                validationState: enableValidation ? validation.state : ''
             }}/>
         }
 
@@ -134,8 +135,8 @@ class Form extends React.Component {
             key: id,
             id,
             label: schema.label,
-            validationState: validation.state,
-            validationMessage: validation.message
+            validationState: enableValidation ? validation.state : '',
+            validationMessage: enableValidation ? validation.message : ''
         }}/>
     }
 }
