@@ -75,6 +75,7 @@ class Form extends React.Component {
         // pre-process options
         const Wrapper = schema.wrapper ? schema.wrapper : buildOptions.Wrapper;
         const options = schema.options || {};
+        const validation = validate(schema.validate, value);
 
         // build node;
         let node = null;
@@ -91,6 +92,7 @@ class Form extends React.Component {
             }));
             node = <Node {...options} {...{
                 children,
+                validationState: validation.state,
                 onInsert: (index)=> onChange(value.slice(0, index).concat(null, value.slice(index))),
                 onRemove: (index)=> onChange(value.slice(0, index).concat(value.slice(index + 1))),
                 onMove: (from, to)=> onChange(
@@ -113,23 +115,27 @@ class Form extends React.Component {
                 // todo other global args
             }));
             node = <Node {...options} {...{
-                children
+                children,
+                validationState: validation.state
             }}/>
         }
         else {
             const Node = typeof schema.type === 'string' ? buildOptions.fields[schema.type] : schema.type;
             if (value === undefined) value = null;
             node = <Node {...options} {...{
-                id, value, onChange
+                id, value, onChange,
+                validationState: validation.state
             }}/>
         }
 
         // build wrapper;
         return <Wrapper {...{
+            children: node,
             key: id,
             id,
             label: schema.label,
-            children: node
+            validationState: validation.state,
+            validationMessage: validation.message
         }}/>
     }
 }
@@ -147,15 +153,13 @@ const EmptyGroup = ({children})=> {
     return <div>{children}</div>;
 };
 
-const adaptValidate = (validate)=> {
-    return (v)=> {
-        if (!validate) return {state: '', message: ''};
-        else {
-            const result = validate(v);
-            if (!result) return {state: 'success', message: ''};
-            else if (typeof result === 'string') return {state: 'error', message: result};
-            else if (Array.isArray(result)) return {state: result[0], message: result[1]};
-            else return result;
-        }
+const validate = (validate, value)=> {
+    if (!validate) return {state: '', message: ''};
+    else {
+        const result = validate(value);
+        if (!result) return {state: 'success', message: ''};
+        else if (typeof result === 'string') return {state: 'error', message: result};
+        else if (Array.isArray(result)) return {state: result[0], message: result[1]};
+        else return result;
     }
 };
