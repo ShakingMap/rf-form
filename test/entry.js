@@ -80,7 +80,6 @@ class TestPage extends React.Component {
             schema,
             //value: this.state.value,
             //onChange: (v, e)=>this.setState({value: v}),
-            readOnly: true,
             onSubmit: (value, summary, validation)=> console.log({value, summary, validation})
         }}>
             <button className="btn btn-primary">提交</button>

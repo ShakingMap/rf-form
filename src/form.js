@@ -68,7 +68,7 @@ class Form extends React.Component {
     render() {
         const {onChange, buildOptions, enableValidation, children, readOnly, disabled} = this.props;
 
-        return <form onSubmit={this.onSubmit.bind(this)}>
+        return <form ref="form" onSubmit={this.onSubmit.bind(this)}>
             {this.getRenderNode({
                 id: this.id,
                 schema: this.getFormSchema(),
@@ -246,6 +246,10 @@ class Form extends React.Component {
 
     getValue() {
         return this.isControlled() ? this.props.value : this.state.value;
+    }
+
+    submit() {
+        this.refs.form.dispatchEvent(new Event('submit'));
     }
 }
 
