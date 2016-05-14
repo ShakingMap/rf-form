@@ -24,6 +24,9 @@ const schema = {
                 label: 'Username',
                 validate(v) {
                     if (v === 'bob') return 'no bob!'
+                },
+                options: {
+                    placeholder: 'input username'
                 }
             },
             password: {

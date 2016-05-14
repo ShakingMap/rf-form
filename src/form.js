@@ -72,10 +72,11 @@ class Form extends React.Component {
     }
 
     getRenderNode({id, schema, value, onChange, buildOptions}) {
-        // todo pre-process options
+        // pre-process options
         const Wrapper = schema.wrapper ? schema.wrapper : buildOptions.Wrapper;
+        const options = schema.options || {};
 
-        // todo build node;
+        // build node;
         let node = null;
         if (schema.array) {
             value = value || [];
@@ -88,7 +89,7 @@ class Form extends React.Component {
                 onChange: (v, e)=> onChange(value.slice(0, index).concat([v], value.slice(index + 1)), e)
                 // todo other global args
             }));
-            node = <Node {...{
+            node = <Node {...options} {...{
                 children,
                 onInsert: (index)=> onChange(value.slice(0, index).concat(null, value.slice(index))),
                 onRemove: (index)=> onChange(value.slice(0, index).concat(value.slice(index + 1))),
@@ -111,14 +112,14 @@ class Form extends React.Component {
                 onChange: (v, e)=> onChange(_.assign({}, value, {[key]: v}), e)
                 // todo other global args
             }));
-            node = <Node {...{
+            node = <Node {...options} {...{
                 children
             }}/>
         }
         else {
             const Node = typeof schema.type === 'string' ? buildOptions.fields[schema.type] : schema.type;
             if (value === undefined) value = null;
-            node = <Node {...{
+            node = <Node {...options} {...{
                 id, value, onChange
             }}/>
         }
@@ -144,4 +145,17 @@ const EmptyWrapper = ({children})=> {
 
 const EmptyGroup = ({children})=> {
     return <div>{children}</div>;
+};
+
+const adaptValidate = (validate)=> {
+    return (v)=> {
+        if (!validate) return {state: '', message: ''};
+        else {
+            const result = validate(v);
+            if (!result) return {state: 'success', message: ''};
+            else if (typeof result === 'string') return {state: 'error', message: result};
+            else if (Array.isArray(result)) return {state: result[0], message: result[1]};
+            else return result;
+        }
+    }
 };
