@@ -197,7 +197,7 @@ class Form extends React.Component {
         e && e.preventDefault();
         const value = getProperValue(this.getFormSchema(), this.getValue());
         const validationData = this.getValidationData(this.getFormSchema(), value);
-        this.setState({enableValidation: true});
+        if (!this.state.enableValidation) this.setState({enableValidation: true}); // update only if this state changed to prevent unused update
         let result = {value, summary: validationData.summary, validation: validationData.validation};
         if (this.props.subForms) {
             const subForms = this.props.subForms();
