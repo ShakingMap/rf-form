@@ -55,6 +55,16 @@ const schema = {
     }
 };
 
+const schema2 = {
+    name: {
+        type: 'Text',
+        label: 'Name',
+        validate(v) {
+            if (!v) return 'you must have a name.'
+        }
+    }
+};
+
 schema.friends.array.group.friends = schema.friends;
 
 class TestPage extends React.Component {
@@ -76,14 +86,29 @@ class TestPage extends React.Component {
     }
 
     render() {
-        return <Form {...{
-            schema,
-            //value: this.state.value,
-            //onChange: (v, e)=>this.setState({value: v}),
-            onSubmit: (value, summary, validation)=> console.log({value, summary, validation})
-        }}>
-            <button className="btn btn-primary">提交</button>
-        </Form>
+        return <div>
+            <Form {...{
+                ref: 'form1',
+                schema,
+                value: this.state.value,
+                onChange: (v, e)=>this.setState({value: v})
+            }}/>
+            <Form {...{
+                ref: 'form2',
+                schema: schema2
+            }}/>
+            <Form {...{
+                subForms: ()=> {
+                    return {
+                        form1: this.refs.form1,
+                        form2: this.refs.form2
+                    }
+                },
+                onSubmit: (value, summary, validation)=> console.log({value, summary, validation})
+            }}>
+                <button className="btn btn-primary">提交</button>
+            </Form>
+        </div>
     }
 }
 

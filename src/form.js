@@ -32,7 +32,8 @@ const propTypes = {
     // func(value, summary, validations)
     onSubmit: React.PropTypes.func,
 
-    // todo connect other form
+    // func(): {key: form}
+    subForms: React.PropTypes.func,
 
     readOnly: React.PropTypes.bool,
 
@@ -195,11 +196,24 @@ class Form extends React.Component {
     }
 
     onSubmit(e) {
-        e.preventDefault();
+        e && e.preventDefault();
         const value = this.getValue();
         const validationData = this.getValidationData(this.getFormSchema(), value);
         this.setState({enableValidation: true});
-        this.props.onSubmit(value, validationData.summary, validationData.validation);
+        let result = {value, summary: validationData.summary, validation: validationData.validation};
+        if (this.props.subForms) {
+            const subForms = this.props.subForms();
+            result = _.reduce(subForms, (result, form, key)=> {
+                const subResult = form.onSubmit();
+                return {
+                    value: _.assign({}, result.value, {[key]: subResult.value}),
+                    summary: _.assignWith({}, result.summary, subResult.summary, (v1, v2)=>(v1 || 0) + (v2 || 0)),
+                    validation: _.assign({}, result.validation, {group: _.assign({[key]: subResult.validation}, result.validation.group)})
+                }
+            }, result)
+        }
+        this.props.onSubmit(result.value, result.summary, result.validation);
+        return result;
     }
 
     getValidationData(schema, value) {
