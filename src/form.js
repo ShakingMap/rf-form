@@ -14,6 +14,12 @@ import _ from 'lodash';
  * array -> {state: array[0], message: array[1]}
  */
 
+/**
+ * Notes
+ *
+ * onChange is modified to pass enable validation state up.
+ */
+
 const propTypes = {
     schema: React.PropTypes.object.isRequired,
     buildOptions: React.PropTypes.object.isRequired,
@@ -49,6 +55,7 @@ const defaultProps = {
 class Form extends React.Component {
     componentWillMount() {
         this.id = Math.random() + '';
+        this.enableValidationState = null;
     }
 
     render() {
@@ -58,7 +65,11 @@ class Form extends React.Component {
             id: this.id,
             schema: this.getFormSchema(),
             value,
-            onChange,
+            enableValidationState: this.enableValidationState,
+            onChange: (v, e, evs)=> {
+                this.enableValidationState = evs;
+                onChange(v, e);
+            },
             buildOptions,
             enableValidation
         })
@@ -72,36 +83,47 @@ class Form extends React.Component {
         }
     }
 
-    getRenderNode({id, schema, value, onChange, buildOptions, enableValidation}) {
+    getRenderNode({id, schema, value, onChange, enableValidationState, buildOptions, enableValidation}) {
         // pre-process options
         const Wrapper = schema.wrapper ? schema.wrapper : buildOptions.Wrapper;
         const options = schema.options || {};
         const validation = validate(schema.validate, value);
+        enableValidationState = enableValidationState || {enabled: false, array: [], group: {}};
+        const localEnableValidation = enableValidation === 'auto' ? enableValidationState.enabled : enableValidation;
 
         // build node;
         let node = null;
         if (schema.array) {
             value = value || [];
             const Node = schema.type ? schema.type : buildOptions.Array;
+            const validationStateForActiveArray = {enabled: true, array: enableValidationState.array};
             const children = _.map(value, (subValue, index)=>this.getRenderNode({
                 id: id + '.' + index,
                 schema: schema.array,
                 value: subValue,
+                enableValidationState: enableValidationState.array[index],
                 buildOptions,
-                onChange: (v, e)=> onChange(value.slice(0, index).concat([v], value.slice(index + 1)), e),
+                onChange: (v, e, evs)=> onChange(
+                    value.slice(0, index).concat([v], value.slice(index + 1)),
+                    e,
+                    {
+                        enabled: true,
+                        array: enableValidationState.array.slice(0, index).concat([evs], enableValidationState.array.slice(index + 1))
+                    }
+                ),
                 enableValidation
             }));
             node = <Node {...options} {...{
                 children,
-                validationState: enableValidation ? validation.state : '',
-                onInsert: (index)=> onChange(value.slice(0, index).concat(null, value.slice(index))),
-                onRemove: (index)=> onChange(value.slice(0, index).concat(value.slice(index + 1))),
+                validationState: localEnableValidation ? validation.state : '',
+                onInsert: (index)=> onChange(value.slice(0, index).concat(null, value.slice(index)), null, validationStateForActiveArray),
+                onRemove: (index)=> onChange(value.slice(0, index).concat(value.slice(index + 1)), null, validationStateForActiveArray),
                 onMove: (from, to)=> onChange(
                     from < to ?
                         value.slice(0, from).concat(value.slice(from + 1, to + 1), [value[from]], value.slice(to + 1))
                         :
                         value.slice(0, to).concat([value[from]], value.slice(to, from), value.slice(from + 1))
-                )
+                    , null, validationStateForActiveArray)
             }}/>
         }
         else if (schema.group) {
@@ -111,21 +133,30 @@ class Form extends React.Component {
                 id: id + '.' + key,
                 schema: subSchema,
                 value: value[key],
+                enableValidationState: enableValidationState.group[key],
                 buildOptions,
-                onChange: (v, e)=> onChange(_.assign({}, value, {[key]: v}), e),
+                onChange: (v, e, evs)=> onChange(
+                    _.assign({}, value, {[key]: v}),
+                    e,
+                    {
+                        enabled: true,
+                        group: _.assign({}, enableValidationState.group, {[key]: evs})
+                    }
+                ),
                 enableValidation
             }));
             node = <Node {...options} {...{
                 children,
-                validationState: enableValidation ? validation.state : ''
+                validationState: localEnableValidation ? validation.state : ''
             }}/>
         }
         else {
             const Node = typeof schema.type === 'string' ? buildOptions.fields[schema.type] : schema.type;
             if (value === undefined) value = null;
             node = <Node {...options} {...{
-                id, value, onChange,
-                validationState: enableValidation ? validation.state : ''
+                id, value,
+                onChange: (v, e)=> onChange(v, e, {enabled: true}),
+                validationState: localEnableValidation ? validation.state : ''
             }}/>
         }
 
@@ -135,8 +166,8 @@ class Form extends React.Component {
             key: id,
             id,
             label: schema.label,
-            validationState: enableValidation ? validation.state : '',
-            validationMessage: enableValidation ? validation.message : ''
+            validationState: localEnableValidation ? validation.state : '',
+            validationMessage: localEnableValidation ? validation.message : ''
         }}/>
     }
 }
