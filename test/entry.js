@@ -17,7 +17,7 @@ const schema = {
         }
     },
     account: {
-        label: 'Group',
+        label: 'Account',
         group: {
             username: {
                 type: 'Text',
