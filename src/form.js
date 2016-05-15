@@ -68,12 +68,14 @@ class Form extends React.Component {
 
     render() {
         const {onChange, buildOptions, enableValidation, children, readOnly, disabled} = this.props;
+        const schema = this.getFormSchema();
+        const value = getProperValue(schema, this.getValue());
 
         return <form ref="form" onSubmit={this.onSubmit.bind(this)}>
             {this.getRenderNode({
                 id: this.id,
-                schema: this.getFormSchema(),
-                value: this.getValue(),
+                schema,
+                value,
                 enableValidationState: this.enableValidationState,
                 onChange: (v, e, evs)=> {
                     this.enableValidationState = evs;
@@ -100,7 +102,6 @@ class Form extends React.Component {
         // pre-process options
         const Wrapper = schema.wrapper ? schema.wrapper : buildOptions.Wrapper;
         const options = schema.options || {};
-        value = getProperValue(schema, value);
         const validation = validate(schema.validate, value);
         enableValidationState = enableValidationState || {enabled: false, array: [], group: {}};
         const localEnableValidation = enableValidation === 'auto' ?
