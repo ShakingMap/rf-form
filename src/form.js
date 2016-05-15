@@ -100,7 +100,7 @@ class Form extends React.Component {
 
     getRenderNode({id, schema, value, onChange, enableValidationState, buildOptions, enableValidation, readOnly, disabled}) {
         // pre-process options
-        const Wrapper = schema.wrapper ? schema.wrapper : buildOptions.Wrapper;
+        const Wrapper = typeof schema.wrapper === 'string' ? buildOptions.fields[schema.wrapper] : (schema.wrapper || buildOptions.Wrapper);
         const options = schema.options || {};
         const validation = validate(schema.validate, value);
         enableValidationState = enableValidationState || {enabled: false, array: [], group: {}};
@@ -114,7 +114,7 @@ class Form extends React.Component {
         // build node;
         let node = null;
         if (schema.array) {
-            const Node = schema.type ? schema.type : buildOptions.Array;
+            const Node = typeof schema.type === 'string' ? buildOptions.fields[schema.type] : (schema.type || buildOptions.Array);
             const validationStateForActiveArray = {enabled: true, array: enableValidationState.array};
             const children = _.map(value, (subValue, index)=>this.getRenderNode({
                 id: id + '.' + index,
@@ -148,7 +148,7 @@ class Form extends React.Component {
             }}/>
         }
         else if (schema.group) {
-            const Node = schema.type ? schema.type : buildOptions.Group;
+            const Node = typeof schema.type === 'string' ? buildOptions.fields[schema.type] : (schema.type || buildOptions.Group);
             const children = _.map(schema.group, (subSchema, key)=>this.getRenderNode({
                 id: id + '.' + key,
                 schema: subSchema,
