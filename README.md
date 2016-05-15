@@ -16,7 +16,7 @@ build react form with validations in a better way.
 ## Installation
 - install React via npm
 - install this package via npm: `npm install rf-form --save`
-- optionally install some form components suit package, see todo
+- optionally install some [form components suit](https://github.com/ShakingMap/rf-form#components-suits-list)
 
 ## Basic Usage
     
@@ -95,7 +95,7 @@ build react form with validations in a better way.
 
 ### Form
 #### Props
-- schema - the *group* field of a field schema object, see todo
+- schema - the *group* field of a [field schema](https://github.com/ShakingMap/rf-form#field-schema) 
 - buildOptions - an object of schema components spread as {Wrapper, Group, Array, fields}
 - value - if undefined, this will be an uncontrolled form
 - onChange - func(value, event)
@@ -190,4 +190,4 @@ you can separate your form and use this manner to layout it.
 ISC
 
 ## Let's Build It Together!
-If you like this project, welcome to give any helps and supports! Thank!
+If you like this project, welcome to give any helps and supports! Thanks!
