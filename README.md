@@ -150,12 +150,13 @@ A field schema is an object of following keys:
 - wrapper - optional string or wrapper component. if string, it will be mapped into a wrapper component by form.props.buildOptions.fields
 - label - optional string
 - options - will be spread to corresponding form component
-- validate - optional func(value): result. standard result format is {state: validationState, message: validationMessage}. if result is not standard, it will be converted as:
+- validate - optional func(value, formValue): result. standard result format is {state: validationState, message: validationMessage}. if result is not standard, it will be converted as:
     - falsy -> {state: 'success', message: ''}
     - string -> {state: 'error', message: string}
     - array -> {state: array[0], message: array[1]}
 - array - optional field schema. if exists, this schema indicates an array field
 - group - optional object as {key: field schema}. if exists, this schema indicates a group field
+- ignoreValue - optional bool. only available for field in a group. if true, the value of this field won't be included in the form value and form validation on submit
 
 ## Components Suits List
 - [rf-bootstrap3](https://github.com/ShakingMap/rf-bootstrap3) - form components suit for bootstrap3

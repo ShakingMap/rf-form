@@ -206,7 +206,7 @@ class Form extends React.Component {
     onSubmit(e) {
         e && e.preventDefault();
         const value = this.fullValue;
-        const validationData = this.getValidationData(this.getFormSchema(), value, value);
+        const validationData = getValidationData(this.getFormSchema(), value, value);
         if (!this.state.enableValidation) this.setState({enableValidation: true}); // update only if this state changed to prevent unused update
         let result = {value, summary: validationData.summary, validation: validationData.validation};
         if (this.props.subForms) {
@@ -222,45 +222,6 @@ class Form extends React.Component {
         }
         this.props.onSubmit(result.value, result.summary, result.validation);
         return result;
-    }
-
-    getValidationData(schema, value, formValue) {
-        const validation = validate(schema.validate, value, formValue);
-        const summary = validation.state ? {[validation.state]: 1} : {};
-
-        if (schema.array) {
-            value = value || [];
-            return _.reduce(value, (result, subValue, index)=> {
-                const subValidationData = this.getValidationData(schema.array, subValue, formValue);
-                return {
-                    summary: _.assignWith({}, result.summary, subValidationData.summary, (v1, v2)=> (v1 || 0) + (v2 || 0)),
-                    validation: _.assign({}, result.validation, {array: result.validation.array.concat([subValidationData.validation])})
-                }
-            }, {
-                summary,
-                validation: _.assign({array: []}, validation)
-            })
-        }
-        else if (schema.group) {
-            value = value || {};
-            return _.reduce(schema.group, (result, subSchema, key)=> {
-                if (subSchema.ignoreValue) return result;
-                const subValidationData = this.getValidationData(subSchema, value[key], formValue);
-                return {
-                    summary: _.assignWith({}, result.summary, subValidationData.summary, (v1, v2)=> (v1 || 0) + (v2 || 0)),
-                    validation: _.assign({}, result.validation, {group: _.assign({[key]: subValidationData.validation}, result.validation.group)})
-                }
-            }, {
-                summary,
-                validation: _.assign({group: {}}, validation)
-            })
-        }
-        else {
-            return {
-                summary,
-                validation
-            }
-        }
     }
 
     isControlled(props) {
@@ -320,4 +281,43 @@ const getFullValue = (schema, value)=> {
         return _.map(value, (subValue, index)=>getFullValue(schema.array, subValue))
     }
     else return value !== undefined ? value : null;
+};
+
+const getValidationData = (schema, value, formValue)=> {
+    const validation = validate(schema.validate, value, formValue);
+    const summary = validation.state ? {[validation.state]: 1} : {};
+
+    if (schema.array) {
+        value = value || [];
+        return _.reduce(value, (result, subValue, index)=> {
+            const subValidationData = getValidationData(schema.array, subValue, formValue);
+            return {
+                summary: _.assignWith({}, result.summary, subValidationData.summary, (v1, v2)=> (v1 || 0) + (v2 || 0)),
+                validation: _.assign({}, result.validation, {array: result.validation.array.concat([subValidationData.validation])})
+            }
+        }, {
+            summary,
+            validation: _.assign({array: []}, validation)
+        })
+    }
+    else if (schema.group) {
+        value = value || {};
+        return _.reduce(schema.group, (result, subSchema, key)=> {
+            if (subSchema.ignoreValue) return result;
+            const subValidationData = getValidationData(subSchema, value[key], formValue);
+            return {
+                summary: _.assignWith({}, result.summary, subValidationData.summary, (v1, v2)=> (v1 || 0) + (v2 || 0)),
+                validation: _.assign({}, result.validation, {group: _.assign({[key]: subValidationData.validation}, result.validation.group)})
+            }
+        }, {
+            summary,
+            validation: _.assign({group: {}}, validation)
+        })
+    }
+    else {
+        return {
+            summary,
+            validation
+        }
+    }
 };
