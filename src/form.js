@@ -64,12 +64,17 @@ class Form extends React.Component {
     componentWillMount() {
         this.id = Math.random() + '';
         this.enableValidationState = null;
+        this.properValue = getProperValue(this.getFormSchema(), this.getValue());
+    }
+
+    componentWillUpdate(nextProps, nextState) {
+        this.properValue = getProperValue(this.getFormSchema(nextProps), this.getValue(nextProps, nextState));
     }
 
     render() {
         const {onChange, buildOptions, enableValidation, children, readOnly, disabled} = this.props;
         const schema = this.getFormSchema();
-        const value = getProperValue(schema, this.getValue());
+        const value = this.properValue;
 
         return <form ref="form" onSubmit={this.onSubmit.bind(this)}>
             {this.getRenderNode({
@@ -90,11 +95,12 @@ class Form extends React.Component {
         </form>
     }
 
-    getFormSchema() {
+    getFormSchema(props) {
+        props = props || this.props;
         return {
             type: EmptyGroup,
             wrapper: EmptyWrapper,
-            group: this.props.schema
+            group: props.schema
         }
     }
 
@@ -196,7 +202,7 @@ class Form extends React.Component {
 
     onSubmit(e) {
         e && e.preventDefault();
-        const value = getProperValue(this.getFormSchema(), this.getValue());
+        const value = this.properValue;
         const validationData = this.getValidationData(this.getFormSchema(), value);
         if (!this.state.enableValidation) this.setState({enableValidation: true}); // update only if this state changed to prevent unused update
         let result = {value, summary: validationData.summary, validation: validationData.validation};
@@ -253,12 +259,15 @@ class Form extends React.Component {
         }
     }
 
-    isControlled() {
-        return this.props.value !== undefined;
+    isControlled(props) {
+        props = props || this.props;
+        return props.value !== undefined;
     }
 
-    getValue() {
-        return this.isControlled() ? this.props.value : this.state.value;
+    getValue(props, state) {
+        props = props || this.props;
+        state=  state || this.state;
+        return this.isControlled(props) ? props.value : state.value;
     }
 
     submit() {
