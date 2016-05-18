@@ -244,6 +244,7 @@ class Form extends React.Component {
         else if (schema.group) {
             value = value || {};
             return _.reduce(schema.group, (result, subSchema, key)=> {
+                if (subSchema.ignoreValue) return result;
                 const subValidationData = this.getValidationData(subSchema, value[key], formValue);
                 return {
                     summary: _.assignWith({}, result.summary, subValidationData.summary, (v1, v2)=> (v1 || 0) + (v2 || 0)),
@@ -312,7 +313,7 @@ const validate = (validate, value, formValue)=> {
 const getFullValue = (schema, value)=> {
     if (schema.group) {
         value = value || {};
-        return _.mapValues(schema.group, (subSchema, key)=>getFullValue(subSchema, value[key]))
+        return _(schema.group).omitBy(subSchema=>subSchema.ignoreValue).mapValues((subSchema, key)=>getFullValue(subSchema, value[key])).value();
     }
     else if (schema.array) {
         value = value || [];
