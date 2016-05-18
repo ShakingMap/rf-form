@@ -22,7 +22,7 @@ const schema = {
             username: {
                 type: 'Text',
                 label: 'Username',
-                validate(v) {
+                validate(v, fv) {
                     if (v === 'bob') return 'no bob!'
                 },
                 options: {
