@@ -122,7 +122,11 @@ class Form extends React.Component {
         let node = null;
         if (schema.array) {
             const Node = typeof schema.type === 'string' ? buildOptions.fields[schema.type] : (schema.type || buildOptions.Array);
-            const validationStateForActiveArray = {enabled: true, array: enableValidationState.array};
+            const validationStateForActiveArray = {
+                enabled: true,
+                array: enableValidationState.array || [],
+                group: enableValidationState.group || {}
+            };
             const children = _.map(value, (subValue, index)=>this.getRenderNode({
                 id: id + '.' + index,
                 schema: schema.array,
@@ -135,7 +139,8 @@ class Form extends React.Component {
                     e,
                     {
                         enabled: true,
-                        array: enableValidationState.array.slice(0, index).concat([evs], enableValidationState.array.slice(index + 1))
+                        array: enableValidationState.array.slice(0, index).concat([evs], enableValidationState.array.slice(index + 1)),
+                        group: enableValidationState.group || {}
                     }
                 ),
                 enableValidation, readOnly, disabled
@@ -169,7 +174,8 @@ class Form extends React.Component {
                     e,
                     {
                         enabled: true,
-                        group: _.assign({}, enableValidationState.group, {[key]: evs})
+                        group: _.assign({}, enableValidationState.group, {[key]: evs}),
+                        array: enableValidationState.array || []
                     }
                 ),
                 enableValidation, readOnly, disabled
@@ -185,7 +191,11 @@ class Form extends React.Component {
             const Node = typeof schema.type === 'string' ? buildOptions.fields[schema.type] : schema.type;
             node = <Node {...options} {...{
                 id, value,
-                onChange: (v, e)=> onChange(v, e, {enabled: true}),
+                onChange: (v, e)=> onChange(v, e, {
+                    enabled: true,
+                    array: enableValidationState.array || [],
+                    group: enableValidationState.group || {}
+                }),
                 validationState: localEnableValidation ? validation.state : '',
                 readOnly: localReadOnly,
                 disabled: localDisabled
@@ -273,11 +283,11 @@ const validate = (validate, value, formValue)=> {
  */
 const getFullValue = (schema, value)=> {
     if (schema.group) {
-        value = value || {};
+        value = (typeof value === 'object' && value) || {};
         return _(schema.group).omitBy(subSchema=>subSchema.ignoreValue).mapValues((subSchema, key)=>getFullValue(subSchema, value[key])).value();
     }
     else if (schema.array) {
-        value = value || [];
+        value = (Array.isArray(value) && value) || [];
         return _.map(value, (subValue, index)=>getFullValue(schema.array, subValue))
     }
     else return value !== undefined ? value : null;

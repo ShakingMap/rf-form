@@ -1,0 +1,70 @@
+require('bootstrap/dist/css/bootstrap.css');
+
+import React from 'react';
+import ReactDOM from 'react-dom';
+
+import * as buildOptions from 'rf-bootstrap3';
+import Form from '../lib';
+
+Form.defaultProps.buildOptions = buildOptions;
+
+const schema1 = {
+    name: {
+        type: 'Text',
+        label: 'Name'
+    }
+};
+
+const schema2 = {
+    item: {
+        label: 'Array',
+        array: {
+            type: 'Text',
+            label: 'Name'
+        }
+    }
+};
+
+const schema3 = {
+    item: {
+        label: 'Group',
+        group: {
+            name: {
+                type: 'Text',
+                label: 'Name'
+            }
+        }
+    }
+};
+
+class TestPage extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            schema: schema2
+        }
+    }
+
+    render() {
+        return <Form {...{
+            schema: this.state.schema
+        }}>
+            <a className="btn btn-primary" onClick={()=>this.setState({schema: schema1})}>1</a>
+            <a className="btn btn-primary" onClick={()=>this.setState({schema: schema2})}>2</a>
+            <a className="btn btn-primary" onClick={()=>this.setState({schema: schema3})}>3</a>
+        </Form>
+    }
+}
+
+let root = document.getElementById('root');
+if (!root) {
+    root = document.createElement('div');
+    root.id = 'root';
+    document.body.appendChild(root);
+}
+
+ReactDOM.render(
+    <TestPage/>,
+    root
+);
+
