@@ -188,6 +188,9 @@ for example
 
 you can separate your form and use this manner to layout it.
 
+## Known Issues
+- schema changing may cause inconsistent value and error.
+
 ## License
 ISC
 
