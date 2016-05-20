@@ -89,6 +89,8 @@ build react form with validations in a better way.
 
 ## APIs
 
+If you are not interested in creating form component, you can only have a look at the apis of *Form*.
+
 ### Common Concepts
 - validation state - one of 'success', 'warning', 'error' or falsy
 
@@ -142,6 +144,7 @@ A field is a form component which is responsible to manage the this field
 - onChange - func(value, event)
 - readOnly - bool, usually implemented by text field
 - disabled - bool, field should be disabled
+- ... - field component can define other props it needs, passed in from the corresponding schema.options
 
 #### Methods
 - cleanValue - func(value, options): compatibleValue. return a value that is compatible with this field.
@@ -152,7 +155,7 @@ A field schema is an object of following keys:
 - type - string or field component. if string, it will be mapped into a field component by form.props.buildOptions.fields. if this schema has array or group key, type key can be omitted
 - wrapper - optional string or wrapper component. if string, it will be mapped into a wrapper component by form.props.buildOptions.fields
 - label - optional string
-- options - will be spread to corresponding form component
+- options - will be spread to the props of corresponding form component
 - validate - optional func(value, formValue): result. standard result format is {state: validationState, message: validationMessage}. if result is not standard, it will be converted as:
     - falsy -> {state: 'success', message: ''}
     - string -> {state: 'error', message: string}

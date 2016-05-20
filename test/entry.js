@@ -24,6 +24,28 @@ const schema = {
         type: 'File',
         label: 'Avatar'
     },
+    sex: {
+        type: 'RadioGroup',
+        label: 'Sex',
+        options: {
+            items: {
+                male: {label: 'Male'},
+                female: 'Female'
+            }
+        }
+    },
+    letters: {
+        type: 'CheckboxGroup',
+        label: 'Letters',
+        options: {
+            items: {
+                a: {label: 'A'},
+                b: {label: 'B'},
+                c: 'CC',
+                d: 'DD'
+            }
+        }
+    },
     account: {
         label: 'Account',
         group: {
