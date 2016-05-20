@@ -1,8 +1,6 @@
 # RF Form
 build react form with validations in a better way.
 
-you can also refer to the awsome [uniforms](https://github.com/vazco/uniforms).
-
 ## Features
 - build React form with validations easily
 - schema based
@@ -12,7 +10,6 @@ you can also refer to the awsome [uniforms](https://github.com/vazco/uniforms).
 - support manipulations of array of fields
 - support top level and individual controls of readOnly, disabled
 - enable validations of fields automatically
-- usable data are passed with value in onSubmit (validation summaries, validation details)
 - support extensions of form components (wrapper, group, array, fields)
 
 ## Installation
@@ -127,7 +124,7 @@ A Group is a form component which is responsible to organize a group of fields
 
 ### Array
 An Array is a form component which is responsible to organize an array of same fields
-### Props
+#### Props
 - children - field
 - validationState - see *validation state* of common concepts
 - readOnly - usually no effect
@@ -145,8 +142,9 @@ A field is a form component which is responsible to manage the this field
 - onChange - func(value, event)
 - readOnly - bool, usually implemented by text field
 - disabled - bool, field should be disabled
+
 #### Methods
-- cleanValue - func(value, options): cleanValue. return a value that is compatible with this field.
+- cleanValue - func(value, options): compatibleValue. return a value that is compatible with this field.
 
 ## Field Schema
 A field schema is an object of following keys:
@@ -172,14 +170,6 @@ A field schema is an object of following keys:
 for example
 
     <Form {...{
-        ref: 'form1',
-        ...
-    }}/>
-    <Form {...{
-        ref: 'form2',
-        ...
-    }}/>
-    <Form {...{
         subForms: ()=> {
             return {
                 form1: this.refs.form1,
@@ -188,13 +178,20 @@ for example
         },
         onSubmit: (value, summary, validation)=> console.log({value, summary, validation})
     }}>
+        <Form {...{
+            type: 'div',
+            ref: 'form1',
+            ...
+        }}/>
+        <Form {...{
+            type: 'div',
+            ref: 'form2',
+            ...
+        }}/>
         <button className="btn btn-primary">Submit</button>
     </Form>
 
 you can separate your form and use this manner to layout it.
-
-## Known Issues
-- schema changing may cause inconsistent value and error.
 
 ## License
 ISC
