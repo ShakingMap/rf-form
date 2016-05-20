@@ -140,7 +140,7 @@ A field is a form component which is responsible to manage the this field
 #### Props
 - id - field id, usually used as *id* props of inner input
 - validationState - see *validation state* of common concepts
-- value - any value this field needs. if undefined, this field should be uncontrolled. if null, this field should adapt it into the proper *empty value* it needs
+- value - any value this field needs. 
 - onChange - func(value, event)
 - readOnly - bool, usually implemented by text field
 - disabled - bool, field should be disabled
