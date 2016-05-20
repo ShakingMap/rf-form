@@ -16,6 +16,10 @@ const schema = {
             if (v < 18) return 'age must >= 18'
         }
     },
+    birthday: {
+        type: 'DatetimeLocal',
+        label: 'Birthday'
+    },
     account: {
         label: 'Account',
         group: {

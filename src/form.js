@@ -64,11 +64,11 @@ class Form extends React.Component {
     componentWillMount() {
         this.id = Math.random() + '';
         this.enableValidationState = null;
-        this.fullValue = getFullValue(this.getFormSchema(), this.getValue());
+        this.fullValue = getFullValue(this.getFormSchema(), this.getValue(), this.props.buildOptions.fields);
     }
 
     componentWillUpdate(nextProps, nextState) {
-        this.fullValue = getFullValue(this.getFormSchema(nextProps), this.getValue(nextProps, nextState));
+        this.fullValue = getFullValue(this.getFormSchema(nextProps), this.getValue(nextProps, nextState), nextProps.buildOptions.fields);
     }
 
     render() {
@@ -281,16 +281,16 @@ const validate = (validate, value, formValue)=> {
  * group -> {key: fullValue}
  * array -> []
  */
-const getFullValue = (schema, value)=> {
+const getFullValue = (schema, value, fields)=> {
     if (schema.group) {
         value = (typeof value === 'object' && value) || {};
-        return _(schema.group).omitBy(subSchema=>subSchema.ignoreValue).mapValues((subSchema, key)=>getFullValue(subSchema, value[key])).value();
+        return _(schema.group).omitBy(subSchema=>subSchema.ignoreValue).mapValues((subSchema, key)=>getFullValue(subSchema, value[key], fields)).value();
     }
     else if (schema.array) {
         value = (Array.isArray(value) && value) || [];
-        return _.map(value, (subValue, index)=>getFullValue(schema.array, subValue))
+        return _.map(value, (subValue, index)=>getFullValue(schema.array, subValue, fields))
     }
-    else return value !== undefined ? value : null;
+    else return getField(schema, fields).cleanValue(value === undefined ? null : value, schema.options || {});
 };
 
 const getValidationData = (schema, value, formValue)=> {
@@ -330,4 +330,9 @@ const getValidationData = (schema, value, formValue)=> {
             validation
         }
     }
+};
+
+const getField = (schema, fields)=> {
+    if (typeof schema.type === 'string') return fields[schema.type];
+    else return schema.type;
 };
