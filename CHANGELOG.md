@@ -1,3 +1,6 @@
+## 0.3.0
+- support change schema
+
 ## 0.2.0
 - support full value cache
 - support validate against full form value, aka, change validate(value) to validate(value, formValue)

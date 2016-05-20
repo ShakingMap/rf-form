@@ -1,6 +1,8 @@
 # RF Form
 build react form with validations in a better way.
 
+you can also refer to the awsome [uniforms](https://github.com/vazco/uniforms).
+
 ## Features
 - build React form with validations easily
 - schema based
@@ -187,6 +189,9 @@ for example
     </Form>
 
 you can separate your form and use this manner to layout it.
+
+## Known Issues
+- schema changing may cause inconsistent value and error.
 
 ## License
 ISC
