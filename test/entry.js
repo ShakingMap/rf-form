@@ -20,6 +20,10 @@ const schema = {
         type: 'DatetimeLocal',
         label: 'Birthday'
     },
+    avatar: {
+        type: 'File',
+        label: 'Avatar'
+    },
     account: {
         label: 'Account',
         group: {

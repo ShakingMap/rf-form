@@ -216,7 +216,11 @@ class Form extends React.Component {
     onSubmit(e) {
         e && e.preventDefault();
         if (!this.state.enableValidation) this.setState({enableValidation: true}); // update only if this state changed to prevent unused update
-        let result = {value: this.fullValue, summary: this.validationResult.summary, validation: this.validationResult.validation};
+        let result = {
+            value: getFullValue(this.getFormSchema(), this.getValue(), this.props.buildOptions.fields),
+            summary: this.validationResult.summary,
+            validation: this.validationResult.validation
+        };
         if (this.props.subForms) {
             const subForms = this.props.subForms();
             result = _.reduce(subForms, (result, form, key)=> {

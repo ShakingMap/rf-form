@@ -144,6 +144,8 @@ A field is a form component which is responsible to manage the this field
 - onChange - func(value, event)
 - readOnly - bool, usually implemented by text field
 - disabled - bool, field should be disabled
+#### Methods
+- cleanValue - func(value, options): cleanValue. return a value that is compatible with this field.
 
 ## Field Schema
 A field schema is an object of following keys:
