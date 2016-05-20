@@ -65,23 +65,24 @@ class Form extends React.Component {
         this.id = Math.random() + '';
         this.enableValidationState = null;
         this.fullValue = getFullValue(this.getFormSchema(), this.getValue(), this.props.buildOptions.fields);
+        this.validationResult = getValidationResult(this.getFormSchema(), this.fullValue, this.fullValue);
     }
 
     componentWillUpdate(nextProps, nextState) {
         this.fullValue = getFullValue(this.getFormSchema(nextProps), this.getValue(nextProps, nextState), nextProps.buildOptions.fields);
+        this.validationResult = getValidationResult(this.getFormSchema(nextProps), this.fullValue, this.fullValue)
     }
 
     render() {
         const {onChange, buildOptions, enableValidation, children, readOnly, disabled} = this.props;
         const schema = this.getFormSchema();
-        const value = this.fullValue;
 
         return <form ref="form" onSubmit={this.onSubmit.bind(this)}>
             {this.getRenderNode({
                 id: this.id,
                 schema,
-                value,
-                formValue: value,
+                value: this.fullValue,
+                validation: this.validationResult.validation,
                 enableValidationState: this.enableValidationState,
                 onChange: (v, e, evs)=> {
                     this.enableValidationState = evs;
@@ -105,11 +106,10 @@ class Form extends React.Component {
         }
     }
 
-    getRenderNode({id, schema, value, formValue, onChange, enableValidationState, buildOptions, enableValidation, readOnly, disabled}) {
+    getRenderNode({id, schema, value, validation, onChange, enableValidationState, buildOptions, enableValidation, readOnly, disabled}) {
         // pre-process options
         const Wrapper = typeof schema.wrapper === 'string' ? buildOptions.fields[schema.wrapper] : (schema.wrapper || buildOptions.Wrapper);
         const options = schema.options || {};
-        const validation = validate(schema.validate, value, formValue);
         enableValidationState = enableValidationState || {enabled: false, array: [], group: {}};
         const localEnableValidation = enableValidation === 'auto' ?
             (this.state.enableValidation || enableValidationState.enabled)
@@ -131,7 +131,7 @@ class Form extends React.Component {
                 id: id + '.' + index,
                 schema: schema.array,
                 value: subValue,
-                formValue,
+                validation: validation.array[index],
                 enableValidationState: enableValidationState.array[index],
                 buildOptions,
                 onChange: (v, e, evs)=> onChange(
@@ -166,7 +166,7 @@ class Form extends React.Component {
                 id: id + '.' + key,
                 schema: subSchema,
                 value: value[key],
-                formValue,
+                validation: validation.group[key],
                 enableValidationState: enableValidationState.group[key],
                 buildOptions,
                 onChange: (v, e, evs)=> onChange(
@@ -215,10 +215,8 @@ class Form extends React.Component {
 
     onSubmit(e) {
         e && e.preventDefault();
-        const value = this.fullValue;
-        const validationData = getValidationData(this.getFormSchema(), value, value);
         if (!this.state.enableValidation) this.setState({enableValidation: true}); // update only if this state changed to prevent unused update
-        let result = {value, summary: validationData.summary, validation: validationData.validation};
+        let result = {value: this.fullValue, summary: this.validationResult.summary, validation: this.validationResult.validation};
         if (this.props.subForms) {
             const subForms = this.props.subForms();
             result = _.reduce(subForms, (result, form, key)=> {
@@ -293,14 +291,14 @@ const getFullValue = (schema, value, fields)=> {
     else return getField(schema, fields).cleanValue(value === undefined ? null : value, schema.options || {});
 };
 
-const getValidationData = (schema, value, formValue)=> {
+const getValidationResult = (schema, value, formValue)=> {
     const validation = validate(schema.validate, value, formValue);
     const summary = validation.state ? {[validation.state]: 1} : {};
 
     if (schema.array) {
         value = value || [];
         return _.reduce(value, (result, subValue, index)=> {
-            const subValidationData = getValidationData(schema.array, subValue, formValue);
+            const subValidationData = getValidationResult(schema.array, subValue, formValue);
             return {
                 summary: _.assignWith({}, result.summary, subValidationData.summary, (v1, v2)=> (v1 || 0) + (v2 || 0)),
                 validation: _.assign({}, result.validation, {array: result.validation.array.concat([subValidationData.validation])})
@@ -314,7 +312,7 @@ const getValidationData = (schema, value, formValue)=> {
         value = value || {};
         return _.reduce(schema.group, (result, subSchema, key)=> {
             if (subSchema.ignoreValue) return result;
-            const subValidationData = getValidationData(subSchema, value[key], formValue);
+            const subValidationData = getValidationResult(subSchema, value[key], formValue);
             return {
                 summary: _.assignWith({}, result.summary, subValidationData.summary, (v1, v2)=> (v1 || 0) + (v2 || 0)),
                 validation: _.assign({}, result.validation, {group: _.assign({[key]: subValidationData.validation}, result.validation.group)})
