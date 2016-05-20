@@ -26,10 +26,10 @@ const propTypes = {
 
     value: React.PropTypes.object,
 
-    // func(value)
+    // func(value, summary, detail)
     onChange: React.PropTypes.func,
 
-    // func(value, summary, validations)
+    // func(value, summary, detail)
     onSubmit: React.PropTypes.func,
 
     // func(): {key: form}
@@ -87,7 +87,8 @@ class Form extends React.Component {
                 onChange: (v, e, evs)=> {
                     this.enableValidationState = evs;
                     if (!this.isControlled()) this.setState({value: v});
-                    onChange(v, e);
+                    const validationResult = getValidationResult(this.getFormSchema(), v, v);
+                    onChange(v, validationResult.summary, validationResult.validation);
                 },
                 buildOptions,
                 enableValidation,
