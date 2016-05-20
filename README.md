@@ -100,12 +100,13 @@ you can also refer to the awsome [uniforms](https://github.com/vazco/uniforms).
 - schema - the *group* field of a [field schema](https://github.com/ShakingMap/rf-form#field-schema) 
 - buildOptions - an object of schema components spread as {Wrapper, Group, Array, fields}
 - value - if undefined, this will be an uncontrolled form
-- onChange - func(value, event)
-- onSubmit - func(value, summary, details), summary is {success: count, warning: count, error: count}, details are all validation results
+- onChange - func(value, summary, detail), summary is {success: count, warning: count, error: count}, details are all validation results
+- onSubmit - func(value, summary, detail), summary is {success: count, warning: count, error: count}, details are all validation results
 - subForms - func(), return a group of sub forms in an object, such as {form1: this.refs.form1, ...}
 - readOnly - bool
 - disabled - bool
 - enableValidation - bool or 'auto', default to 'auto', which will enable validation of a field if the onChange of the field is triggered
+- type - string, default to 'form'
 
 ### Wrapper
 A Wrapper is a form component which is responsible to render label, field component and validation message.

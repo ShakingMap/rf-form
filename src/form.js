@@ -39,7 +39,9 @@ const propTypes = {
 
     disabled: React.PropTypes.bool,
 
-    enableValidation: React.PropTypes.any
+    enableValidation: React.PropTypes.any,
+
+    type: React.PropTypes.string
 };
 
 const defaultProps = {
@@ -50,7 +52,8 @@ const defaultProps = {
     onSubmit(){},
     readOnly: false,
     disabled: false,
-    enableValidation: 'auto'
+    enableValidation: 'auto',
+    type: 'form'
 };
 
 class Form extends React.Component {
@@ -74,11 +77,13 @@ class Form extends React.Component {
     }
 
     render() {
-        const {onChange, buildOptions, enableValidation, children, readOnly, disabled} = this.props;
+        const {onChange, buildOptions, enableValidation, children, readOnly, disabled, type} = this.props;
         const schema = this.getFormSchema();
 
-        return <form ref="form" onSubmit={this.onSubmit.bind(this)}>
-            {this.getRenderNode({
+        return React.createElement(type, {
+                onSubmit: this.onSubmit.bind(this)
+            },
+            this.getRenderNode({
                 id: this.id,
                 schema,
                 value: this.fullValue,
@@ -93,9 +98,9 @@ class Form extends React.Component {
                 buildOptions,
                 enableValidation,
                 readOnly, disabled
-            })}
-            {children}
-        </form>
+            }),
+            children
+        );
     }
 
     getFormSchema(props) {
@@ -215,26 +220,8 @@ class Form extends React.Component {
     }
 
     onSubmit(e) {
-        e && e.preventDefault();
-        if (!this.state.enableValidation) this.setState({enableValidation: true}); // update only if this state changed to prevent unused update
-        let result = {
-            value: getFullValue(this.getFormSchema(), this.getValue(), this.props.buildOptions.fields),
-            summary: this.validationResult.summary,
-            validation: this.validationResult.validation
-        };
-        if (this.props.subForms) {
-            const subForms = this.props.subForms();
-            result = _.reduce(subForms, (result, form, key)=> {
-                const subResult = form.onSubmit();
-                return {
-                    value: _.assign({}, result.value, {[key]: subResult.value}),
-                    summary: _.assignWith({}, result.summary, subResult.summary, (v1, v2)=>(v1 || 0) + (v2 || 0)),
-                    validation: _.assign({}, result.validation, {group: _.assign({[key]: subResult.validation}, result.validation.group)})
-                }
-            }, result)
-        }
-        this.props.onSubmit(result.value, result.summary, result.validation);
-        return result;
+        e.preventDefault();
+        this.submit();
     }
 
     isControlled(props) {
@@ -250,7 +237,25 @@ class Form extends React.Component {
 
     // public
     submit() {
-        this.refs.form.dispatchEvent(new Event('submit'));
+        if (!this.state.enableValidation) this.setState({enableValidation: true}); // update only if this state changed to prevent unused update
+        let result = {
+            value: getFullValue(this.getFormSchema(), this.getValue(), this.props.buildOptions.fields),
+            summary: this.validationResult.summary,
+            validation: this.validationResult.validation
+        };
+        if (this.props.subForms) {
+            const subForms = this.props.subForms();
+            result = _.reduce(subForms, (result, form, key)=> {
+                const subResult = form.submit();
+                return {
+                    value: _.assign({}, result.value, {[key]: subResult.value}),
+                    summary: _.assignWith({}, result.summary, subResult.summary, (v1, v2)=>(v1 || 0) + (v2 || 0)),
+                    validation: _.assign({}, result.validation, {group: _.assign({[key]: subResult.validation}, result.validation.group)})
+                }
+            }, result)
+        }
+        this.props.onSubmit(result.value, result.summary, result.validation);
+        return result;
     }
 }
 
