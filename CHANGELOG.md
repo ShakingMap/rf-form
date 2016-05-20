@@ -1,3 +1,6 @@
+## 0.4.1
+- update readme on npm
+
 ## 0.4.0
 - build full value using cleanValue method of each field to prevent dirty value after schema changing
 - compute validation result before updating
