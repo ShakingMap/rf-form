@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Rf-form by ShakingMap</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Rf-form</h1>
+      <h2 class="project-tagline">rf form: build react form with validations in a better way.</h2>
+      <a href="https://github.com/ShakingMap/rf-form" class="btn">View on GitHub</a>
+      <a href="https://github.com/ShakingMap/rf-form/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/ShakingMap/rf-form/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="rf-form" class="anchor" href="#rf-form" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>RF Form</h1>
+
+<p>build react form with validations in a better way.</p>
+
+<h2>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Features</h2>
+
+<ul>
+<li>build React form with validations easily</li>
+<li>schema based</li>
+<li>support recursive structures</li>
+<li>support circle schema definition</li>
+<li>support connected forms</li>
+<li>support manipulations of array of fields</li>
+<li>support top level and individual controls of readOnly, disabled</li>
+<li>enable validations of fields automatically</li>
+<li>support extensions of form components (wrapper, group, array, fields)</li>
+</ul>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h2>
+
+<ul>
+<li>install React via npm</li>
+<li>install this package via npm: <code>npm install rf-form --save</code>
+</li>
+<li>optionally install some <a href="https://github.com/ShakingMap/rf-form#components-suits-list">form components suit</a>
+</li>
+</ul>
+
+<h2>
+<a id="basic-usage" class="anchor" href="#basic-usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Basic Usage</h2>
+
+<p>You can have a look at the <a href="https://github.com/ShakingMap/rf-form/blob/master/test/entry.js">test file</a>.</p>
+
+<p>First, import <em>Form</em> and any <em>Form Components Suit</em> you choose.</p>
+
+<pre><code>import Form from 'rf-form';
+import * as buildOptions from 'rf-bootstrap3';
+</code></pre>
+
+<p>Then, you can optionally set the <em>Form Components Suit</em> as default props of the <em>Form</em>, or you can pass it as a prop when you render the form.</p>
+
+<pre><code>Form.defaultProps.buildOptions = buildOptions;
+</code></pre>
+
+<p>Then, define your <a href="https://github.com/ShakingMap/rf-form#field-schema">schema</a>.</p>
+
+<pre><code>const schema = {
+    name: {
+        type: 'Text',
+        label: 'Name',
+        validate(v) {
+            if (!v) return 'Name is required.'
+        }
+    },
+    birthday: {
+        type: 'Date',
+        label: 'Birthday'
+    },
+    sex: {
+        type: 'RadioGroup',
+        label: 'Sex',
+        options: {
+            items: {
+                male: 'Male',
+                female: 'Female',
+                unknown: {label: 'Unknown', disabled: true}
+            }
+        },
+        validate(v) {
+            if (!v) return 'Sex is required.'
+        }
+    },
+    friends: {
+        label: 'Friends',
+        array: {
+            type: 'Text',
+            label: 'Friend Name'
+        },
+        validate(v) {
+            if (v.length &gt; 3) return 'You have too much friends.'
+        }
+    },
+    account: {
+        label: 'Account',
+        group: {
+            username: {
+                type: 'Text',
+                label: 'Username',
+                validate(v) {if (!v) return 'Username is required.'}
+            },
+            password: {
+                type: 'Password',
+                label: 'Password',
+                validate(v) {if (!v || v.length &lt; 6) return 'Password length must be &gt;= 6.'}
+            },
+            confirmPassword: {
+                type: 'Password',
+                label: 'Confirm Password',
+                validate(v, fv /*form value*/) {
+                    if (v !== fv.account.password) return 'Password does not match.'
+                }
+            }
+        }
+    }
+};
+</code></pre>
+
+<p>Finally, render the form</p>
+
+<pre><code>class TestPage extends React.Component {
+    render() {
+        return &lt;Form {...{
+            schema: schema,
+            onSubmit: (value, summary, detail)=&gt; console.log({value, summary, detail})
+
+            // you can specify value and onChange props to make the form work in controlled mode.
+            // value: ...
+            // onChange: (value, summary, detail)=&gt; ...
+        }}&gt;
+            &lt;button className="btn btn-primary"&gt;Submit&lt;/button&gt;
+        &lt;/Form&gt;
+    }
+}
+</code></pre>
+
+<h2>
+<a id="apis" class="anchor" href="#apis" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>APIs</h2>
+
+<p>If you are not interested in creating form component, you can only have a look at the apis of <em>Form</em>.</p>
+
+<h3>
+<a id="common-concepts" class="anchor" href="#common-concepts" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Common Concepts</h3>
+
+<ul>
+<li>validation state - one of 'success', 'warning', 'error' or falsy</li>
+</ul>
+
+<h3>
+<a id="form" class="anchor" href="#form" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Form</h3>
+
+<h4>
+<a id="props" class="anchor" href="#props" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Props</h4>
+
+<ul>
+<li>schema - the <em>group field</em> of a <a href="https://github.com/ShakingMap/rf-form#field-schema">field schema</a> </li>
+<li>buildOptions - an object as {Wrapper, Group, Array, fields}, being used to build the form, often provided by some <em>form components suit package</em>.</li>
+<li>value - if undefined, the form will be uncontrolled.</li>
+<li>onChange - func(value, summary, details), summary is {success: count, warning: count, error: count}, details are all validation results.</li>
+<li>onSubmit - func(value, summary, details), summary is {success: count, warning: count, error: count}, details are all validation results.</li>
+<li>subForms - func(), return a group of sub forms in an object, such as {form1: this.refs.form1, form2: this.refs.form2, ...}.</li>
+<li>readOnly - bool</li>
+<li>disabled - bool</li>
+<li>enableValidation - bool or 'auto', default to 'auto', which will enable validation of a field if the onChange of the field is triggered</li>
+<li>type - string, default to 'form'</li>
+</ul>
+
+<h3>
+<a id="wrapper" class="anchor" href="#wrapper" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Wrapper</h3>
+
+<p>A Wrapper is a form component which is responsible for rendering label, field component and validation message.</p>
+
+<h4>
+<a id="props-1" class="anchor" href="#props-1" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Props</h4>
+
+<ul>
+<li>id - field id, usually used as <em>htmlFor</em> prop of label</li>
+<li>label - optional string</li>
+<li>validationState - see <em>validation state</em> of common concepts</li>
+<li>validationMessage - string</li>
+<li>children - field</li>
+</ul>
+
+<h3>
+<a id="group" class="anchor" href="#group" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Group</h3>
+
+<p>A Group is a form component which is responsible for organizing a group of fields</p>
+
+<h4>
+<a id="props-2" class="anchor" href="#props-2" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Props</h4>
+
+<ul>
+<li>children - field</li>
+<li>validationState - see <em>validation state</em> of common concepts</li>
+<li>readOnly - usually no effect</li>
+<li>disabled - usually no effect</li>
+</ul>
+
+<h3>
+<a id="array" class="anchor" href="#array" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Array</h3>
+
+<p>An Array is a form component which is responsible for organizing an array of same fields</p>
+
+<h4>
+<a id="props-3" class="anchor" href="#props-3" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Props</h4>
+
+<ul>
+<li>children - field</li>
+<li>validationState - see <em>validation state</em> of common concepts</li>
+<li>readOnly - usually no effect</li>
+<li>disabled - the array manipulation operations should be disabled</li>
+<li>onInsert - func(index)</li>
+<li>onRemove - func(index)</li>
+<li>onMove - func(from, to)</li>
+</ul>
+
+<h3>
+<a id="field" class="anchor" href="#field" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Field</h3>
+
+<p>A field is a form component which is responsible for managing the this field</p>
+
+<h4>
+<a id="props-4" class="anchor" href="#props-4" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Props</h4>
+
+<ul>
+<li>id - field id, usually used as <em>id</em> props of inner input</li>
+<li>validationState - see <em>validation state</em> of common concepts</li>
+<li>value - any value this field needs. </li>
+<li>onChange - func(value, event)</li>
+<li>readOnly - bool, usually implemented by text field</li>
+<li>disabled - bool, field should be disabled</li>
+<li>... - field component can define other props it needs, passed in from the corresponding schema.options</li>
+</ul>
+
+<h4>
+<a id="methods" class="anchor" href="#methods" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Methods</h4>
+
+<ul>
+<li>cleanValue - func(value, options): compatibleValue. return a value that is compatible with this field.</li>
+</ul>
+
+<h2>
+<a id="field-schema" class="anchor" href="#field-schema" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Field Schema</h2>
+
+<p>A field schema is an object of following keys:</p>
+
+<ul>
+<li>type - string or field component. if string, it will be mapped into a field component by form.props.buildOptions.fields. if this schema has array or group key, type key can be omitted</li>
+<li>wrapper - optional string or wrapper component. if string, it will be mapped into a wrapper component by form.props.buildOptions.fields</li>
+<li>label - optional string</li>
+<li>options - will be spread to the props of corresponding form component</li>
+<li>validate - optional func(value, formValue): result. standard result format is {state: validationState, message: validationMessage}. if result is not standard, it will be converted as below:
+
+<ul>
+<li>falsy -&gt; {state: 'success', message: ''}</li>
+<li>string -&gt; {state: 'error', message: string}</li>
+<li>array -&gt; {state: array[0], message: array[1]}</li>
+</ul>
+</li>
+<li>array - optional <em>field schema</em>. if exists, this schema indicates an array field.</li>
+<li>group - optional object as {key: <em>field schema</em>}. if exists, this schema indicates a group field.</li>
+<li>ignoreValue - optional bool. only available for field in a group. if true, the value of this field won't be included in the form value and form validation on submit</li>
+</ul>
+
+<h2>
+<a id="components-suits-list" class="anchor" href="#components-suits-list" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Components Suits List</h2>
+
+<ul>
+<li>
+<a href="https://github.com/ShakingMap/rf-bootstrap3">rf-bootstrap3</a> - form components suit for bootstrap3</li>
+<li>
+<a href="https://github.com/ShakingMap/rf-materialize">rf-materialize</a> - form components suit for materialize</li>
+</ul>
+
+<h2>
+<a id="qa" class="anchor" href="#qa" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Q&amp;A</h2>
+
+<h3>
+<a id="how-to-connect-forms" class="anchor" href="#how-to-connect-forms" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>How to connect forms?</h3>
+
+<p>For example</p>
+
+<pre><code>&lt;Form {...{
+    subForms: ()=&gt; {
+        return {
+            form1: this.refs.form1,
+            form2: this.refs.form2
+        }
+    },
+    onSubmit: (value, summary, detail)=&gt; console.log({value, summary, detail})
+}}&gt;
+    &lt;Form {...{
+        type: 'div',
+        ref: 'form1',
+        ...
+    }}/&gt;
+    &lt;Form {...{
+        type: 'div',
+        ref: 'form2',
+        ...
+    }}/&gt;
+    &lt;button className="btn btn-primary"&gt;Submit&lt;/button&gt;
+&lt;/Form&gt;
+</code></pre>
+
+<p>You can separate your form into many sub forms and layout them in this way.</p>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
+
+<p>ISC</p>
+
+<h2>
+<a id="lets-build-it-together" class="anchor" href="#lets-build-it-together" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Let's Build It Together!</h2>
+
+<p>If you like this project, welcome to give any helps and supports! Thanks!</p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/ShakingMap/rf-form">Rf-form</a> is maintained by <a href="https://github.com/ShakingMap">ShakingMap</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
