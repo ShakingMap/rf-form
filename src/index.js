@@ -32,7 +32,7 @@ import DisabledForm from './pages/disabled-form';
 Form.defaultProps.buildOptions = buildOptions;
 
 render((
-    <Router history={browserHistory}>
+    <Router>
         <Route path="/" component={App}>
             <Route path="set-default-component-suit" component={SetDefaultComponentSuitPage}/>
             <Route path="basic-usage" component={BasicUsage}/>
