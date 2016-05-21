@@ -12,13 +12,17 @@ build react form with validations in a better way.
 - enable validations of fields automatically
 - support extensions of form components (wrapper, group, array, fields)
 
+## Demo
+[Demo Site](http://shakingmap.github.io/rf-form)
+
 ## Installation
 - install React via npm
 - install this package via npm: `npm install rf-form --save`
 - optionally install some [form components suit](https://github.com/ShakingMap/rf-form#components-suits-list)
 
 ## Basic Usage
-You can have a look at the [test file](https://github.com/ShakingMap/rf-form/blob/master/test/entry.js).
+
+For more usages, please refer to the [Demo Site](http://shakingmap.github.io/rf-form).
 
 First, import *Form* and any *Form Components Suit* you choose.
 
