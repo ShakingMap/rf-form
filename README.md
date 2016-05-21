@@ -18,22 +18,53 @@ build react form with validations in a better way.
 - optionally install some [form components suit](https://github.com/ShakingMap/rf-form#components-suits-list)
 
 ## Basic Usage
-    
-    require('bootstrap/dist/css/bootstrap.css');
-    import {Wrapper, Group, Array, fields} from 'rf-bootstrap3';
+You can have a look at the [test file](https://github.com/ShakingMap/rf-form/blob/master/test/entry.js).
+
+First, import *Form* and any *Form Components Suit* you choose.
+
     import Form from 'rf-form';
-    
-    import React from 'react';
-    import ReactDOM from 'react-dom';
-    
-    Form.defaultProps.buildOptions = {Wrapper, Group, Array, fields};
-    
+    import * as buildOptions from 'rf-bootstrap3';
+
+Then, you can optionally set the *Form Components Suit* as default props of the *Form*, or you can pass it as a prop when you render the form.
+
+    Form.defaultProps.buildOptions = buildOptions;
+
+Then, define your [schema](https://github.com/ShakingMap/rf-form#field-schema).
+
     const schema = {
-        age: {
-            type: 'Number',
-            label: 'Age',
+        name: {
+            type: 'Text',
+            label: 'Name',
             validate(v) {
-                if (v < 18) return 'age must >= 18'
+                if (!v) return 'Name is required.'
+            }
+        },
+        birthday: {
+            type: 'Date',
+            label: 'Birthday'
+        },
+        sex: {
+            type: 'RadioGroup',
+            label: 'Sex',
+            options: {
+                items: {
+                    male: 'Male',
+                    female: 'Female',
+                    unknown: {label: 'Unknown', disabled: true}
+                }
+            },
+            validate(v) {
+                if (!v) return 'Sex is required.'
+            }
+        },
+        friends: {
+            label: 'Friends',
+            array: {
+                type: 'Text',
+                label: 'Friend Name'
+            },
+            validate(v) {
+                if (v.length > 3) return 'You have too much friends.'
             }
         },
         account: {
@@ -42,45 +73,35 @@ build react form with validations in a better way.
                 username: {
                     type: 'Text',
                     label: 'Username',
-                    validate(v) {
-                        if (v === 'bob') return 'no bob!'
-                    },
-                    options: {
-                        placeholder: 'input username'
-                    }
+                    validate(v) {if (!v) return 'Username is required.'}
                 },
                 password: {
                     type: 'Password',
                     label: 'Password',
-                    validate(v) {
-                        if (!v || v.length < 6) return 'password must have at least 6 bits.'
-                    }
-                }
-            }
-        },
-        friends: {
-            label: 'Friends',
-            validate(v) {
-                if (v && v.length > 2) return 'too many friends!'
-            },
-            array: {
-                group: {
-                    name: {
-                        type: 'Text',
-                        label: 'Name'
+                    validate(v) {if (!v || v.length < 6) return 'Password length must be >= 6.'}
+                },
+                confirmPassword: {
+                    type: 'Password',
+                    label: 'Confirm Password',
+                    validate(v, fv /*form value*/) {
+                        if (v !== fv.account.password) return 'Password does not match.'
                     }
                 }
             }
         }
     };
-    
-    schema.friends.array.group.friends = schema.friends;
-    
+
+Finally, render the form
+
     class TestPage extends React.Component {
         render() {
             return <Form {...{
-                schema,
-                onSubmit: (value, summary, validation)=> console.log({value, summary, validation})
+                schema: schema,
+                onSubmit: (value, summary, detail)=> console.log({value, summary, detail})
+    
+                // you can specify value and onChange props to make the form work in controlled mode.
+                // value: ...
+                // onChange: (value, summary, detail)=> ...
             }}>
                 <button className="btn btn-primary">Submit</button>
             </Form>
@@ -96,19 +117,19 @@ If you are not interested in creating form component, you can only have a look a
 
 ### Form
 #### Props
-- schema - the *group* field of a [field schema](https://github.com/ShakingMap/rf-form#field-schema) 
-- buildOptions - an object of schema components spread as {Wrapper, Group, Array, fields}
-- value - if undefined, this will be an uncontrolled form
-- onChange - func(value, summary, detail), summary is {success: count, warning: count, error: count}, details are all validation results
-- onSubmit - func(value, summary, detail), summary is {success: count, warning: count, error: count}, details are all validation results
-- subForms - func(), return a group of sub forms in an object, such as {form1: this.refs.form1, ...}
+- schema - the *group field* of a [field schema](https://github.com/ShakingMap/rf-form#field-schema) 
+- buildOptions - an object as {Wrapper, Group, Array, fields}, being used to build the form, often provided by some *form components suit package*.
+- value - if undefined, the form will be uncontrolled.
+- onChange - func(value, summary, details), summary is {success: count, warning: count, error: count}, details are all validation results.
+- onSubmit - func(value, summary, details), summary is {success: count, warning: count, error: count}, details are all validation results.
+- subForms - func(), return a group of sub forms in an object, such as {form1: this.refs.form1, form2: this.refs.form2, ...}.
 - readOnly - bool
 - disabled - bool
 - enableValidation - bool or 'auto', default to 'auto', which will enable validation of a field if the onChange of the field is triggered
 - type - string, default to 'form'
 
 ### Wrapper
-A Wrapper is a form component which is responsible to render label, field component and validation message.
+A Wrapper is a form component which is responsible for rendering label, field component and validation message.
 #### Props
 - id - field id, usually used as *htmlFor* prop of label
 - label - optional string
@@ -117,7 +138,7 @@ A Wrapper is a form component which is responsible to render label, field compon
 - children - field
 
 ### Group
-A Group is a form component which is responsible to organize a group of fields
+A Group is a form component which is responsible for organizing a group of fields
 #### Props
 - children - field
 - validationState - see *validation state* of common concepts
@@ -125,7 +146,7 @@ A Group is a form component which is responsible to organize a group of fields
 - disabled - usually no effect
 
 ### Array
-An Array is a form component which is responsible to organize an array of same fields
+An Array is a form component which is responsible for organizing an array of same fields
 #### Props
 - children - field
 - validationState - see *validation state* of common concepts
@@ -136,7 +157,7 @@ An Array is a form component which is responsible to organize an array of same f
 - onMove - func(from, to)
 
 ### Field
-A field is a form component which is responsible to manage the this field
+A field is a form component which is responsible for managing the this field
 #### Props
 - id - field id, usually used as *id* props of inner input
 - validationState - see *validation state* of common concepts
@@ -156,12 +177,12 @@ A field schema is an object of following keys:
 - wrapper - optional string or wrapper component. if string, it will be mapped into a wrapper component by form.props.buildOptions.fields
 - label - optional string
 - options - will be spread to the props of corresponding form component
-- validate - optional func(value, formValue): result. standard result format is {state: validationState, message: validationMessage}. if result is not standard, it will be converted as:
+- validate - optional func(value, formValue): result. standard result format is {state: validationState, message: validationMessage}. if result is not standard, it will be converted as below:
     - falsy -> {state: 'success', message: ''}
     - string -> {state: 'error', message: string}
     - array -> {state: array[0], message: array[1]}
-- array - optional field schema. if exists, this schema indicates an array field
-- group - optional object as {key: field schema}. if exists, this schema indicates a group field
+- array - optional *field schema*. if exists, this schema indicates an array field.
+- group - optional object as {key: *field schema*}. if exists, this schema indicates a group field.
 - ignoreValue - optional bool. only available for field in a group. if true, the value of this field won't be included in the form value and form validation on submit
 
 ## Components Suits List
@@ -170,7 +191,7 @@ A field schema is an object of following keys:
 
 ## Q&A
 ### How to connect forms?
-for example
+For example
 
     <Form {...{
         subForms: ()=> {
@@ -179,7 +200,7 @@ for example
                 form2: this.refs.form2
             }
         },
-        onSubmit: (value, summary, validation)=> console.log({value, summary, validation})
+        onSubmit: (value, summary, detail)=> console.log({value, summary, detail})
     }}>
         <Form {...{
             type: 'div',
@@ -194,7 +215,7 @@ for example
         <button className="btn btn-primary">Submit</button>
     </Form>
 
-you can separate your form and use this manner to layout it.
+You can separate your form into many sub forms and layout them in this way.
 
 ## License
 ISC

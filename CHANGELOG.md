@@ -1,3 +1,6 @@
+## 0.4.2
+- update readme and keywords on npm
+
 ## 0.4.1
 - update readme on npm
 

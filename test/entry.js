@@ -9,41 +9,39 @@ import Form from '../lib';
 Form.defaultProps.buildOptions = buildOptions;
 
 const schema = {
-    age: {
-        type: 'Number',
-        label: 'Age',
+    name: {
+        type: 'Text',
+        label: 'Name',
         validate(v) {
-            if (v < 18) return 'age must >= 18'
+            if (!v) return 'Name is required.'
         }
     },
     birthday: {
-        type: 'DatetimeLocal',
+        type: 'Date',
         label: 'Birthday'
-    },
-    avatar: {
-        type: 'File',
-        label: 'Avatar'
     },
     sex: {
         type: 'RadioGroup',
         label: 'Sex',
         options: {
             items: {
-                male: {label: 'Male'},
-                female: 'Female'
+                male: 'Male',
+                female: 'Female',
+                unknown: {label: 'Unknown', disabled: true}
             }
+        },
+        validate(v) {
+            if (!v) return 'Sex is required.'
         }
     },
-    letters: {
-        type: 'CheckboxGroup',
-        label: 'Letters',
-        options: {
-            items: {
-                a: {label: 'A'},
-                b: {label: 'B'},
-                c: 'CC',
-                d: 'DD'
-            }
+    friends: {
+        label: 'Friends',
+        array: {
+            type: 'Text',
+            label: 'Friend Name'
+        },
+        validate(v) {
+            if (v.length > 3) return 'You have too much friends.'
         }
     },
     account: {
@@ -52,92 +50,35 @@ const schema = {
             username: {
                 type: 'Text',
                 label: 'Username',
-                validate(v, fv) {
-                    if (v === 'bob') return 'no bob!'
-                },
-                options: {
-                    placeholder: 'input username'
-                }
+                validate(v) {if (!v) return 'Username is required.'}
             },
             password: {
                 type: 'Password',
-                label: 'Password'
-            }
-        }
-    },
-    friends: {
-        label: 'Friends',
-        validate(v) {
-            if (v && v.length > 2) return 'too many friends!'
-        },
-        array: {
-            // label: ...
-            group: {
-                name: {
-                    type: 'Text',
-                    label: 'Name',
-                    validate(v) {
-                        if (v !== 'bob') return 'must be bob!'
-                    }
+                label: 'Password',
+                validate(v) {if (!v || v.length < 6) return 'Password length must be >= 6.'}
+            },
+            confirmPassword: {
+                type: 'Password',
+                label: 'Confirm Password',
+                validate(v, fv /*form value*/) {
+                    if (v !== fv.account.password) return 'Password does not match.'
                 }
             }
         }
     }
 };
-
-const schema2 = {
-    name: {
-        type: 'Text',
-        label: 'Name',
-        validate(v) {
-            if (!v) return 'you must have a name.'
-        }
-    }
-};
-
-schema.friends.array.group.friends = schema.friends;
 
 class TestPage extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            value: {
-                age: 10,
-                account: {
-                    username: 'bob',
-                    password: '123'
-                },
-                friends: [
-                    {name: 'alan'},
-                    {name: 'doge', friends: [{name: 'cate'}]}
-                ]
-            }
-        }
-    }
-
     render() {
         return <Form {...{
-            subForms: ()=> {
-                return {
-                    form1: this.refs.form1,
-                    form2: this.refs.form2
-                }
-            },
-            onSubmit: (value, summary, validation)=> console.log({value, summary, validation})
+            schema: schema,
+            onSubmit: (value, summary, detail)=> console.log({value, summary, detail})
+
+            // you can specify value and onChange props to make the form work in controlled mode.
+            // value: ...
+            // onChange: (value, summary, detail)=> ...
         }}>
-            <Form {...{
-                type: 'div',
-                ref: 'form1',
-                schema,
-                value: this.state.value,
-                onChange: (v, e)=>this.setState({value: v})
-            }}/>
-            <Form {...{
-                type: 'div',
-                ref: 'form2',
-                schema: schema2
-            }}/>
-            <button className="btn btn-primary">提交</button>
+            <button className="btn btn-primary">Submit</button>
         </Form>
     }
 }

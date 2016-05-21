@@ -1,6 +1,6 @@
 {
   "name": "rf-form",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "rf form: build react form with validations in a better way.",
   "main": "lib/index.js",
   "scripts": {
@@ -39,5 +39,6 @@
     "url-loader": "^0.5.7",
     "webpack": "^1.13.0",
     "webpack-dev-server": "^1.14.1"
-  }
+  },
+  "keywords": ["react", "form", "rf-form"]
 }
