@@ -39,7 +39,7 @@ const code = `const schema = {
 export default class Page extends React.Component {
     render() {
         return <div>
-            <h2>Field: Datetime</h2>
+            <h2>Field: DatetimeLocal</h2>
             
             <h3>Code</h3>
             

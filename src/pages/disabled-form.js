@@ -132,7 +132,7 @@ const code = `const schema = {
 export default class Page extends React.Component {
     render() {
         return <div>
-            <h2>Basic Usage</h2>
+            <h2>Disabled Form</h2>
             <p>You can disable the whole form.</p>
             <h3>Code</h3>
             <pre>{code}</pre>
