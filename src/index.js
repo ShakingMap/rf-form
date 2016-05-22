@@ -28,6 +28,7 @@ import InfiniteArrayGroup from './pages/infinite-array-group';
 import ConnectForms from './pages/connect-forms';
 import ControlledForm from './pages/controlled-form';
 import DisabledForm from './pages/disabled-form';
+import DecorateAnExistingFieldComponent from './pages/decorate-an-existing-field-component';
 
 Form.defaultProps.buildOptions = buildOptions;
 
@@ -55,6 +56,7 @@ render((
             <Route path="connect-forms" component={ConnectForms}/>
             <Route path="controlled-form" component={ControlledForm}/>
             <Route path="disabled-form" component={DisabledForm}/>
+            <Route path="decorate-an-existing-field-component" component={DecorateAnExistingFieldComponent}/>
         </Route>
     </Router>
 ), document.getElementById('root'));

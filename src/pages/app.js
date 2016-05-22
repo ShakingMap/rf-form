@@ -37,6 +37,7 @@ export default class App extends React.Component {
                 <li><Link to="connect-forms">Connect Forms</Link></li>
                 <li><Link to="controlled-form">Controlled Form</Link></li>
                 <li><Link to="disabled-form">Disabled Form</Link></li>
+                <li><Link to="decorate-an-existing-field-component">Decorate an existing field component</Link></li>
             </ul>
             {this.props.children}
             <p style={{marginTop: '10px', cursor: 'pointer'}}><a onClick={()=>document.body.scrollTop=0}>Back to Top</a></p>
