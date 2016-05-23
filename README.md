@@ -180,7 +180,7 @@ A field schema is an object of following keys:
 - type - string or field component. if string, it will be mapped into a field component by form.props.buildOptions.fields. if this schema has array or group key, type key can be omitted
 - wrapper - optional string or wrapper component. if string, it will be mapped into a wrapper component by form.props.buildOptions.fields
 - label - optional string
-- options - will be spread to the props of corresponding form component
+- options - all options will be spread to the props of corresponding form component. you should only set allowed options such as `readOnly`, `disabled` and any alllowed options defined by specific field component(usually addressed in its doc).  
 - validate - optional func(value, formValue): result. standard result format is {state: validationState, message: validationMessage}. if result is not standard, it will be converted as below:
     - falsy -> {state: 'success', message: ''}
     - string -> {state: 'error', message: string}
