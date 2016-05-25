@@ -123,7 +123,9 @@ class Form extends React.Component {
             enableValidation;
         const localReadOnly = schema.readOnly || readOnly;
         const localDisabled = schema.disabled || disabled;
-
+        const validationState = localEnableValidation ? validation.state : '';
+        const validationMessage = localEnableValidation ? validation.message : '';
+        
         // build node;
         let node = null;
         if (schema.array) {
@@ -153,7 +155,8 @@ class Form extends React.Component {
             }));
             node = <Node {...options} {...{
                 children,
-                validationState: localEnableValidation ? validation.state : '',
+                validationState,
+                validationMessage,
                 onInsert: (index)=> onChange(value.slice(0, index).concat(null, value.slice(index)), null, validationStateForActiveArray),
                 onRemove: (index)=> onChange(value.slice(0, index).concat(value.slice(index + 1)), null, validationStateForActiveArray),
                 onMove: (from, to)=> onChange(
@@ -188,7 +191,8 @@ class Form extends React.Component {
             }));
             node = <Node {...options} {...{
                 children,
-                validationState: localEnableValidation ? validation.state : '',
+                validationState,
+                validationMessage,
                 readOnly: localReadOnly,
                 disabled: localDisabled
             }}/>
@@ -202,7 +206,8 @@ class Form extends React.Component {
                     array: enableValidationState.array || [],
                     group: enableValidationState.group || {}
                 }),
-                validationState: localEnableValidation ? validation.state : '',
+                validationState,
+                validationMessage,
                 readOnly: localReadOnly,
                 disabled: localDisabled
             }}/>
@@ -214,8 +219,8 @@ class Form extends React.Component {
             key: id,
             id,
             label: schema.label,
-            validationState: localEnableValidation ? validation.state : '',
-            validationMessage: localEnableValidation ? validation.message : ''
+            validationState,
+            validationMessage
         }}/>
     }
 

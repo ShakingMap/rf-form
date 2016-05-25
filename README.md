@@ -146,6 +146,7 @@ A Group is a form component which is responsible for organizing a group of field
 #### Props
 - children - field
 - validationState - see *validation state* of common concepts
+- validationMessage - string
 - readOnly - usually no effect
 - disabled - usually no effect
 
@@ -154,6 +155,7 @@ An Array is a form component which is responsible for organizing an array of sam
 #### Props
 - children - field
 - validationState - see *validation state* of common concepts
+- validationMessage - string
 - readOnly - usually no effect
 - disabled - the array manipulation operations should be disabled
 - onInsert - func(index)
@@ -165,6 +167,7 @@ A field is a form component which is responsible for managing the this field
 #### Props
 - id - field id, usually used as *id* props of inner input
 - validationState - see *validation state* of common concepts
+- validationMessage - string
 - value - any value this field needs. 
 - onChange - func(value, event)
 - readOnly - bool, usually implemented by text field

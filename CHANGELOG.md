@@ -1,3 +1,6 @@
+## 0.5.0
+- now Group, Array and fields will receive validation state and message, thus creating more flexible components is possible.
+
 ## 0.4.2
 - update readme and keywords on npm
 
