@@ -195,6 +195,7 @@ A field schema is an object of following keys:
 ## Components Suits List
 - [rf-bootstrap3](https://github.com/ShakingMap/rf-bootstrap3) - form components suit for bootstrap3
 - [rf-materialize](https://github.com/ShakingMap/rf-materialize) - form components suit for materialize
+- [rf-material-ui](https://github.com/ShakingMap/rf-material-ui) - form components suit for material-ui
 
 ## Q&A
 ### How to connect forms?
