@@ -1,5 +1,8 @@
 # RF Form
+
 build react form with validations in a better way.
+
+**Note: This project is inactively maintained, you can have a try to the great alternative [uniforms](https://github.com/vazco/uniforms)**
 
 ## Features
 - build React form with validations easily
